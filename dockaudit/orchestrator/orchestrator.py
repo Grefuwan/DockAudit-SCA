@@ -6,7 +6,14 @@ from dockaudit.reporting.report_generator import ReportGenerator
 
 
 class Orchestrator:
-    def __init__(self, target="local", output_format="html", severity="medium"):
+    def __init__(
+        self,
+        target="local",
+        output_format="html",
+        severity="medium",
+        sbom_dir="reports/sbom",
+        nvd_feed=None
+    ):
         self.target = target
         self.output_format = output_format
         self.severity = severity
@@ -14,7 +21,7 @@ class Orchestrator:
         # Inicialización de módulos
         self.host_audit = HostAudit(target)
         self.container_audit = ContainerAudit(target)
-        self.image_analysis = ImageAnalysis(target)
+        self.image_analysis = ImageAnalysis(target, sbom_dir=sbom_dir, nvd_feed=nvd_feed)
 
         self.report_generator = ReportGenerator(output_format, severity)
 
@@ -24,7 +31,8 @@ class Orchestrator:
         results = {
             "host": [],
             "containers": [],
-            "images": []
+            "images": [],
+            "binaries": []
         }
 
         # Ejecutar auditoría de host
@@ -37,7 +45,11 @@ class Orchestrator:
 
         # Ejecutar análisis de imágenes
         print("[*] Ejecutando análisis de imágenes...")
-        results["images"] = self.image_analysis.run()
+        image_results = self.image_analysis.run()
+        results["images"] = image_results.get("findings", [])
+        results["binaries"] = image_results.get("binary_findings", [])
+        results["vulnerabilities"] = image_results.get("vulnerabilities", [])
+        results["sbom_path"] = image_results.get("sbom_path")
 
         print("[*] Auditoría finalizada.")
 

@@ -1,1 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DockAudit-SCA Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.5; margin: 2rem; }
+    h1, h2, h3 { color: #333; }
+    .summary { margin-bottom: 1.5rem; }
+    .finding { margin-bottom: 1rem; padding: 1rem; border: 1px solid #ccc; border-radius: 6px; }
+    .finding h3 { margin: 0 0 0.5rem; }
+    .severity-info { background: #eef7ff; }
+    .severity-medium { background: #fff7e6; }
+    .severity-high { background: #ffe6e6; }
+    .severity-critical { background: #ffdada; }
+    .recommendation { font-style: italic; color: #555; }
+    .footer { margin-top: 2rem; color: #555; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <h1>DockAudit-SCA Report</h1>
+  <div class="summary">
+    <p>Resumen de hallazgos:</p>
+    <ul>
+      <li>Host: {{ summary.host if summary.host is defined else 0 }}</li>
+      <li>Contenedores: {{ summary.containers if summary.containers is defined else 0 }}</li>
+      <li>Imágenes: {{ summary.images if summary.images is defined else 0 }}</li>
+      <li>Binarios: {{ summary.binaries if summary.binaries is defined else 0 }}</li>
+      <li>Vulnerabilidades: {{ summary.vulnerabilities if summary.vulnerabilities is defined else 0 }}</li>
+    </ul>
+  </div>
 
+  {% for section, items in results.items() %}
+  <section>
+    <h2>{{ section.capitalize() }}</h2>
+    {% if items %}
+      {% for item in items %}
+      <article class="finding severity-{{ item.severity }}">
+        <h3>{{ item.id }} — {{ item.title }}</h3>
+        <p><strong>Severidad:</strong> {{ item.severity }} (riesgo {{ item.risk_score }})</p>
+        <p>{{ item.description }}</p>
+        <p class="recommendation">Recomendación: {{ item.recommendation }}</p>
+      </article>
+      {% endfor %}
+    {% else %}
+      <p>No hay hallazgos que cumplan el nivel mínimo de severidad.</p>
+    {% endif %}
+  </section>
+  {% endfor %}
+
+  {% if sbom_path %}
+  <div class="footer">
+    <p>SBOM generado en: {{ sbom_path }}</p>
+  </div>
+  {% endif %}
+</body>
+</html>

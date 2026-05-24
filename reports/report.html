@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DockAudit-SCA Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.5; margin: 2rem; }
+    h1, h2, h3 { color: #333; }
+    .summary { margin-bottom: 1.5rem; }
+    .finding { margin-bottom: 1rem; padding: 1rem; border: 1px solid #ccc; border-radius: 6px; }
+    .finding h3 { margin: 0 0 0.5rem; }
+    .severity-info { background: #eef7ff; }
+    .severity-medium { background: #fff7e6; }
+    .severity-high { background: #ffe6e6; }
+    .severity-critical { background: #ffdada; }
+    .recommendation { font-style: italic; color: #555; }
+    .footer { margin-top: 2rem; color: #555; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <h1>DockAudit-SCA Report</h1>
+  <div class="summary">
+    <p>Resumen de hallazgos:</p>
+    <ul>
+      <li>Host: 2</li>
+      <li>Contenedores: 1</li>
+      <li>Imágenes: 1</li>
+      <li>Binarios: 0</li>
+      <li>Vulnerabilidades: 0</li>
+    </ul>
+  </div>
+
+  
+  <section>
+    <h2>Host</h2>
+    
+      
+      <article class="finding severity-critical">
+        <h3>HOST-003 — Error executing docker command</h3>
+        <p><strong>Severidad:</strong> critical (riesgo 5)</p>
+        <p>[Errno 2] No such file or directory: &#39;docker&#39;</p>
+        <p class="recommendation">Recomendación: Check execution environment.</p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3>HOST-006 — Docker socket not found</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>docker.sock file does not exist.</p>
+        <p class="recommendation">Recomendación: Verify Docker daemon status.</p>
+      </article>
+      
+    
+  </section>
+  
+  <section>
+    <h2>Containers</h2>
+    
+      
+      <article class="finding severity-critical">
+        <h3>CONT-000 — Docker API unavailable for container audit</h3>
+        <p><strong>Severidad:</strong> critical (riesgo 5)</p>
+        <p>Error while fetching server API version: (&#39;Connection aborted.&#39;, FileNotFoundError(2, &#39;No such file or directory&#39;))</p>
+        <p class="recommendation">Recomendación: Verify Docker daemon is running and accessible.</p>
+      </article>
+      
+    
+  </section>
+  
+  <section>
+    <h2>Images</h2>
+    
+      
+      <article class="finding severity-critical">
+        <h3>IMG-000 — Docker API unavailable for image analysis</h3>
+        <p><strong>Severidad:</strong> critical (riesgo 5)</p>
+        <p>Error while fetching server API version: (&#39;Connection aborted.&#39;, FileNotFoundError(2, &#39;No such file or directory&#39;))</p>
+        <p class="recommendation">Recomendación: Verify Docker daemon is running and accessible.</p>
+      </article>
+      
+    
+  </section>
+  
+  <section>
+    <h2>Binaries</h2>
+    
+      <p>No hay hallazgos que cumplan el nivel mínimo de severidad.</p>
+    
+  </section>
+  
+  <section>
+    <h2>Vulnerabilities</h2>
+    
+      <p>No hay hallazgos que cumplan el nivel mínimo de severidad.</p>
+    
+  </section>
+  
+
+  
+</body>
+</html>

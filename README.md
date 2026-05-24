@@ -6,24 +6,35 @@ Security auditing tool for Docker environments with integrated Software Composit
 
 - Docker host configuration auditing
 - Container runtime security analysis
-- Docker image vulnerability scanning
-- Binary and dependency analysis
-- SBOM generation (CycloneDX)
-- Vulnerability matching using NVD
-- HTML report generation
+- Docker image metadata inspection
+- Binary analysis of container image contents
+- Package dependency extraction from Docker images (dpkg, rpm, apk)
+- Risk-based finding classification and SBOM/NVD correlation
+- HTML and JSON report generation
 
-## Architecture
-
-The system follows a modular architecture:
-
-- Orchestrator
-- Host Audit Module
-- Container Analysis Module
-- Image & Binary Analysis Module
-- SCA Module
-- Reporting Module
-
-## Execution
+## Quick start
 
 ```bash
-python -m dockaudit.main --target local --output report.html
+cd /home/jgv/Documentos/TFM_-_Docker/DockAudit-SCA
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python main.py --target local --output html
+```
+
+## SBOM and NVD
+
+The tool now extracts installed package dependencies from Docker images using common package managers (dpkg, rpm, apk), performs binary content analysis, scores findings by risk level, and correlates them with NVD vulnerabilities.
+
+```bash
+python main.py --target local --output html --sbom-dir reports/sbom --nvd-feed /path/to/nvdcve-1.1-2024.json.gz
+```
+
+## Resultados
+
+- HTML report: `reports/report.html`
+- JSON report: `reports/report.json`
+
+## Notas
+
+Si Docker no está disponible, el proyecto devuelve hallazgos críticos que describen el problema. Los módulos pueden extenderse para añadir más comprobaciones de imágenes y SBOM.

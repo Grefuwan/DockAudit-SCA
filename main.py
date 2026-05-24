@@ -28,6 +28,20 @@ def parse_arguments():
         help="Nivel mínimo de severidad a mostrar"
     )
 
+    parser.add_argument(
+        "--sbom-dir",
+        type=str,
+        default="reports/sbom",
+        help="Directorio de salida para archivos SBOM"
+    )
+
+    parser.add_argument(
+        "--nvd-feed",
+        type=str,
+        default="",
+        help="Ruta al archivo de feed NVD JSON o JSON.GZ"
+    )
+
     return parser.parse_args()
 
 
@@ -37,7 +51,9 @@ def main():
     orchestrator = Orchestrator(
         target=args.target,
         output_format=args.output,
-        severity=args.severity
+        severity=args.severity,
+        sbom_dir=args.sbom_dir,
+        nvd_feed=args.nvd_feed or None
     )
 
     results = orchestrator.run_audit()
