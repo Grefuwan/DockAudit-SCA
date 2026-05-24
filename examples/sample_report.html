@@ -1,1 +1,17 @@
-
+<html><head><meta charset='utf-8'><title>DockAudit-SCA Report</title></head><body>
+<h1>DockAudit-SCA - Informe</h1>
+<h2>Host</h2>
+<ul>
+<li><strong>HOST-003</strong> - Error executing docker command (critical)<br>[Errno 2] No such file or directory: 'docker'<br><em>Check execution environment.</em></li>
+<li><strong>HOST-006</strong> - Docker socket not found (medium)<br>docker.sock file does not exist.<br><em>Verify Docker daemon status.</em></li>
+<li><strong>HOST-010</strong> - daemon.json not found (low)<br>Docker daemon configuration file not found.<br><em>Consider defining explicit daemon configuration.</em></li>
+</ul>
+<h2>Containers</h2>
+<ul>
+<li><strong>CONT-001</strong> - No running containers detected (info)<br>No containers were found to audit.<br><em>Run containers to perform runtime checks.</em></li>
+</ul>
+<h2>Images</h2>
+<ul>
+<li><strong>IMG-001</strong> - No images scanned (info)<br>Image analysis is not configured in this minimal demo.<br><em>Enable image scanning plugins or provide image list.</em></li>
+</ul>
+</body></html>
