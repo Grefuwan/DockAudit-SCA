@@ -39,9 +39,16 @@ class ReportGenerator:
             if not isinstance(items, list):
                 continue
             filtered = self._filter(items)
+            deduped = []
+            seen = set()
             for item in filtered:
+                key = item.get("id") or (item.get("title"), item.get("description"))
+                if key in seen:
+                    continue
+                seen.add(key)
                 item.setdefault("risk_score", self.SEVERITY_ORDER.get(item.get("severity", "info"), 1))
-            filtered_results[section] = filtered
+                deduped.append(item)
+            filtered_results[section] = deduped
 
         if self.output_format == "json":
             out_path = os.path.join("reports", "report.json")

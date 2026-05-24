@@ -2,6 +2,23 @@
 
 Security auditing tool for Docker environments with integrated Software Composition Analysis (SCA) and SBOM generation.
 
+## Objetivos
+
+### 1.2.1. Objetivo general
+
+Desarrollar un sistema de auditoría de seguridad para entornos Docker que permita analizar configuraciones, dependencias software y binarios presentes en imágenes de contenedor, con el fin de identificar vulnerabilidades y proponer medidas de mitigación.
+
+### 1.2.2. Objetivos específicos
+
+- Analizar la arquitectura de seguridad de Docker y los mecanismos de aislamiento utilizados en entornos de contenedores.
+- Diseñar la arquitectura de un sistema de auditoría orientado al análisis de seguridad de contenedores e imágenes Docker.
+- Implementar un sistema de análisis de composición software (Software Composition Analysis, SCA) capaz de identificar dependencias y componentes incluidos en imágenes de contenedor.
+- Generar un Software Bill of Materials (SBOM) que describa los componentes software presentes en las imágenes analizadas.
+- Realizar análisis de binarios presentes en imágenes de contenedor para detectar posibles vulnerabilidades o configuraciones inseguras.
+- Evaluar configuraciones de seguridad del entorno Docker, incluyendo privilegios de contenedores, capacidades del kernel, políticas de aislamiento y configuraciones de red.
+- Diseñar un sistema de evaluación de riesgos que permita clasificar los hallazgos de seguridad según su criticidad.
+- Proponer medidas de hardening y buenas prácticas de seguridad para mejorar la protección de entornos Docker.
+
 ## Features
 
 - Docker host configuration auditing
@@ -26,14 +43,34 @@ python main.py --target local --output html
 
 The tool now extracts installed package dependencies from Docker images using common package managers (dpkg, rpm, apk), performs binary content analysis, scores findings by risk level, and correlates them with NVD vulnerabilities.
 
+Use a local NVD JSON/GZ feed to match package components to vulnerabilities:
+
 ```bash
-python main.py --target local --output html --sbom-dir reports/sbom --nvd-feed /path/to/nvdcve-1.1-2024.json.gz
+python main.py --target local --output html --sbom-dir reports/sbom --nvd-feed sample_nvd.json
+```
+
+A sample feed is available in `sample_nvd.json` for demo purposes.
+
+To download a real official NVD feed, run:
+
+```bash
+bash scripts/download_nvd_feed.sh 2024 feeds
+```
+
+Then use the downloaded file:
+
+```bash
+python main.py --target local --output html --sbom-dir reports/sbom --nvd-feed feeds/nvdcve-1.1-2024.json.gz
 ```
 
 ## Resultados
 
 - HTML report: `reports/report.html`
 - JSON report: `reports/report.json`
+
+## Documentación adicional
+
+- Arquitectura y objetivos del proyecto: `docs/architecture.md`
 
 ## Notas
 

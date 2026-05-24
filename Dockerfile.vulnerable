@@ -1,0 +1,6 @@
+FROM alpine:3.18
+RUN apk add --no-cache bash curl python3
+RUN adduser -D testuser
+RUN touch /usr/local/bin/test-suid && chmod 4755 /usr/local/bin/test-suid
+RUN echo '# Insecure configuration' > /etc/shadow
+CMD ["sleep", "3600"]

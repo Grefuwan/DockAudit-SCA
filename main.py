@@ -1,5 +1,23 @@
 import argparse
+import sys
 from dockaudit.orchestrator.orchestrator import Orchestrator
+
+
+def check_docker_available(target="local"):
+    if target != "local":
+        return True
+
+    try:
+        import docker
+        client = docker.from_env()
+        client.ping()
+        return True
+    except ModuleNotFoundError:
+        print("[ERROR] Docker SDK no está instalado. Ejecuta `pip install -r requirements.txt`.")
+        return False
+    except Exception as e:
+        print(f"[ERROR] No se puede conectar al daemon Docker: {e}")
+        return False
 
 
 def parse_arguments():
@@ -47,6 +65,10 @@ def parse_arguments():
 
 def main():
     args = parse_arguments()
+
+    if not check_docker_available(args.target):
+        print("Docker es necesario para ejecutar la auditoría local. Instala el daemon y asegúrate de que /var/run/docker.sock sea accesible.")
+        sys.exit(1)
 
     orchestrator = Orchestrator(
         target=args.target,

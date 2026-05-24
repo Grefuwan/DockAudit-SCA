@@ -23,9 +23,9 @@
   <div class="summary">
     <p>Resumen de hallazgos:</p>
     <ul>
-      <li>Host: 2</li>
+      <li>Host: 0</li>
       <li>Contenedores: 1</li>
-      <li>Imágenes: 1</li>
+      <li>Imágenes: 3</li>
       <li>Binarios: 0</li>
       <li>Vulnerabilidades: 0</li>
     </ul>
@@ -35,21 +35,7 @@
   <section>
     <h2>Host</h2>
     
-      
-      <article class="finding severity-critical">
-        <h3>HOST-003 — Error executing docker command</h3>
-        <p><strong>Severidad:</strong> critical (riesgo 5)</p>
-        <p>[Errno 2] No such file or directory: &#39;docker&#39;</p>
-        <p class="recommendation">Recomendación: Check execution environment.</p>
-      </article>
-      
-      <article class="finding severity-medium">
-        <h3>HOST-006 — Docker socket not found</h3>
-        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
-        <p>docker.sock file does not exist.</p>
-        <p class="recommendation">Recomendación: Verify Docker daemon status.</p>
-      </article>
-      
+      <p>No hay hallazgos que cumplan el nivel mínimo de severidad.</p>
     
   </section>
   
@@ -57,11 +43,11 @@
     <h2>Containers</h2>
     
       
-      <article class="finding severity-critical">
-        <h3>CONT-000 — Docker API unavailable for container audit</h3>
-        <p><strong>Severidad:</strong> critical (riesgo 5)</p>
-        <p>Error while fetching server API version: (&#39;Connection aborted.&#39;, FileNotFoundError(2, &#39;No such file or directory&#39;))</p>
-        <p class="recommendation">Recomendación: Verify Docker daemon is running and accessible.</p>
+      <article class="finding severity-high">
+        <h3>CONT-002 — Privileged container detected: test-audit-container</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>A container is running with privileged access.</p>
+        <p class="recommendation">Recomendación: Avoid privileged containers unless strictly required.</p>
       </article>
       
     
@@ -71,11 +57,25 @@
     <h2>Images</h2>
     
       
-      <article class="finding severity-critical">
-        <h3>IMG-000 — Docker API unavailable for image analysis</h3>
-        <p><strong>Severidad:</strong> critical (riesgo 5)</p>
-        <p>Error while fetching server API version: (&#39;Connection aborted.&#39;, FileNotFoundError(2, &#39;No such file or directory&#39;))</p>
-        <p class="recommendation">Recomendación: Verify Docker daemon is running and accessible.</p>
+      <article class="finding severity-medium">
+        <h3>IMG-3289 — Image tagged with latest</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Image tags test-audit-image:latest use the latest tag, which is not immutable.</p>
+        <p class="recommendation">Recomendación: Use explicit immutable tags instead of &#39;latest&#39;.</p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3>IMG-1758 — Image tagged with latest</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Image tags hello-world:latest use the latest tag, which is not immutable.</p>
+        <p class="recommendation">Recomendación: Use explicit immutable tags instead of &#39;latest&#39;.</p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3>IMG-PKG-ERR-sha256:0 — Package extraction failed for image hello-world:latest</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>400 Client Error for http+docker://localhost/v1.54/containers/b76bbcb0f052c04c5ea58759782bcd84c122e17a9a594d598352488879301ca2/start: Bad Request (&#34;failed to create task for container: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: &#34;sh&#34;: executable file not found in $PATH&#34;)</p>
+        <p class="recommendation">Recomendación: Verify Docker can run the image and that the image supports package inspection.</p>
       </article>
       
     
@@ -96,6 +96,10 @@
   </section>
   
 
+  
+  <div class="footer">
+    <p>SBOM generado en: reports/sbom/sbom.json</p>
+  </div>
   
 </body>
 </html>
