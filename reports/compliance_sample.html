@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DockAudit-SCA - Sample Compliance Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        header p {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+        .metadata {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            border-top: 4px solid #667eea;
+        }
+        .summary-card.compliant { border-top-color: #4caf50; }
+        .summary-card.non-compliant { border-top-color: #f44336; }
+        .summary-card.unknown { border-top-color: #ff9800; }
+        .summary-card .number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .summary-card.compliant .number { color: #4caf50; }
+        .summary-card.non-compliant .number { color: #f44336; }
+        .summary-card.unknown .number { color: #ff9800; }
+        .summary-card .label {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .compliance-percentage {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .section h3 {
+            color: #555;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        thead {
+            background-color: #f5f5f5;
+        }
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        .status-compliant {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+        .status-non-compliant {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        .status-unknown {
+            background-color: #ffe0b2;
+            color: #e65100;
+        }
+        .severity-critical {
+            color: #c62828;
+            font-weight: bold;
+        }
+        .severity-high {
+            color: #f57c00;
+            font-weight: bold;
+        }
+        .severity-medium {
+            color: #f9a825;
+        }
+        .severity-low {
+            color: #558b2f;
+        }
+        .finding-detail {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #ddd;
+        }
+        .iso-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        .iso-badge {
+            background: #e8eaf6;
+            color: #3f51b5;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        .remediation {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .chart {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .bar {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .bar-label {
+            width: 150px;
+            font-weight: 500;
+        }
+        .bar-container {
+            flex: 1;
+            background: #e0e0e0;
+            border-radius: 4px;
+            height: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .bar-fill.compliant { background: #4caf50; }
+        .bar-fill.non-compliant { background: #f44336; }
+        .bar-fill.unknown { background: #ff9800; }
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔐 Compliance Report</h1>
+            <p>CIS Docker Benchmark & ISO/IEC 27001 Assessment</p>
+        </header>
+        
+        <div class="metadata">
+            <strong>Generated:</strong> 2026-05-25T21:41:06.323595<br>
+            <strong>Report Type:</strong> Security Compliance Audit
+        </div>
+        
+        
+        <div class="summary-grid">
+            <div class="summary-card compliant">
+                <div class="number">6</div>
+                <div class="label">Compliant Controls</div>
+            </div>
+            <div class="summary-card non-compliant">
+                <div class="number">9</div>
+                <div class="label">Non-Compliant Controls</div>
+            </div>
+            <div class="summary-card unknown">
+                <div class="number">7</div>
+                <div class="label">Unknown Status</div>
+            </div>
+            <div class="summary-card">
+                <div class="compliance-percentage">27.3%</div>
+                <div class="label">Compliance Rate</div>
+            </div>
+        </div>
+
+        
+        <div class="section"><h2>📋 Compliance Findings</h2><table><thead><tr><th>CIS Control</th><th>Title</th><th>Severity</th><th>Status</th><th>ISO Controls</th></tr></thead><tbody>
+            <tr>
+                <td><strong>CIS-2.1</strong></td>
+                <td>Ejecutar el daemon Docker en un grupo no-raíz</td>
+                <td><span class="severity-high">HIGH</span></td>
+                <td><span class="status-badge status-non_compliant">NON_COMPLIANT</span></td>
+                <td>A.9.2.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-2.2</strong></td>
+                <td>Separar el directorio de datos del daemon en una partición</td>
+                <td><span class="severity-medium">MEDIUM</span></td>
+                <td><span class="status-badge status-unknown">UNKNOWN</span></td>
+                <td>A.9.1.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-2.9</strong></td>
+                <td>Mantener la versión correcta de Docker</td>
+                <td><span class="severity-medium">MEDIUM</span></td>
+                <td><span class="status-badge status-compliant">COMPLIANT</span></td>
+                <td>A.12.6.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-3.1</strong></td>
+                <td>No usar --privileged con contenedores en producción</td>
+                <td><span class="severity-critical">CRITICAL</span></td>
+                <td><span class="status-badge status-non_compliant">NON_COMPLIANT</span></td>
+                <td>A.9.1.1, A.9.2.5</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-3.2</strong></td>
+                <td>No usar --user=root</td>
+                <td><span class="severity-high">HIGH</span></td>
+                <td><span class="status-badge status-non_compliant">NON_COMPLIANT</span></td>
+                <td>A.9.2.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-3.3</strong></td>
+                <td>Usar capacidades Linux restrictivas</td>
+                <td><span class="severity-high">HIGH</span></td>
+                <td><span class="status-badge status-non_compliant">NON_COMPLIANT</span></td>
+                <td>A.9.2.5</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-3.4</strong></td>
+                <td>Montar /etc/shadow como read-only</td>
+                <td><span class="severity-medium">MEDIUM</span></td>
+                <td><span class="status-badge status-unknown">UNKNOWN</span></td>
+                <td>A.9.1.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-4.1</strong></td>
+                <td>Crear y usar imágenes personalizadas</td>
+                <td><span class="severity-medium">MEDIUM</span></td>
+                <td><span class="status-badge status-non_compliant">NON_COMPLIANT</span></td>
+                <td>A.14.2.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-4.2</strong></td>
+                <td>Verificar integridad de imágenes</td>
+                <td><span class="severity-high">HIGH</span></td>
+                <td><span class="status-badge status-unknown">UNKNOWN</span></td>
+                <td>A.14.2.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-4.3</strong></td>
+                <td>Instalar solo paquetes necesarios</td>
+                <td><span class="severity-medium">MEDIUM</span></td>
+                <td><span class="status-badge status-compliant">COMPLIANT</span></td>
+                <td>A.12.6.2</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-4.4</strong></td>
+                <td>Usar imágenes base de confianza</td>
+                <td><span class="severity-high">HIGH</span></td>
+                <td><span class="status-badge status-compliant">COMPLIANT</span></td>
+                <td>A.14.2.5</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-4.7</strong></td>
+                <td>Remover SETUID y SETGID en imágenes</td>
+                <td><span class="severity-high">HIGH</span></td>
+                <td><span class="status-badge status-non_compliant">NON_COMPLIANT</span></td>
+                <td>A.14.2.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-4.10</strong></td>
+                <td>No usar bind mount de volúmenes sensibles</td>
+                <td><span class="severity-high">HIGH</span></td>
+                <td><span class="status-badge status-non_compliant">NON_COMPLIANT</span></td>
+                <td>A.9.1.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-5.1</strong></td>
+                <td>Verificar las políticas de AppArmor</td>
+                <td><span class="severity-high">HIGH</span></td>
+                <td><span class="status-badge status-non_compliant">NON_COMPLIANT</span></td>
+                <td>A.12.6.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-5.2</strong></td>
+                <td>Usar Seccomp para restringir syscalls</td>
+                <td><span class="severity-high">HIGH</span></td>
+                <td><span class="status-badge status-non_compliant">NON_COMPLIANT</span></td>
+                <td>A.12.6.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-5.3</strong></td>
+                <td>Usar SELinux para limitar contenedores</td>
+                <td><span class="severity-high">HIGH</span></td>
+                <td><span class="status-badge status-unknown">UNKNOWN</span></td>
+                <td>A.12.6.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-5.5</strong></td>
+                <td>No deshabilitar la actualización de restricciones</td>
+                <td><span class="severity-critical">CRITICAL</span></td>
+                <td><span class="status-badge status-compliant">COMPLIANT</span></td>
+                <td>A.12.6.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-6.2</strong></td>
+                <td>Escanear imágenes en busca de vulnerabilidades</td>
+                <td><span class="severity-high">HIGH</span></td>
+                <td><span class="status-badge status-compliant">COMPLIANT</span></td>
+                <td>A.12.6.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-6.3</strong></td>
+                <td>Permitir solo imágenes confiables</td>
+                <td><span class="severity-high">HIGH</span></td>
+                <td><span class="status-badge status-unknown">UNKNOWN</span></td>
+                <td>A.9.1.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-7.1</strong></td>
+                <td>Actualizar Kubernetes/Orchestrator</td>
+                <td><span class="severity-medium">MEDIUM</span></td>
+                <td><span class="status-badge status-unknown">UNKNOWN</span></td>
+                <td>A.12.6.1</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-8.1</strong></td>
+                <td>Usar secrets para gestionar credenciales</td>
+                <td><span class="severity-high">HIGH</span></td>
+                <td><span class="status-badge status-unknown">UNKNOWN</span></td>
+                <td>A.9.4.2</td>
+            </tr>
+            
+            <tr>
+                <td><strong>CIS-8.2</strong></td>
+                <td>No usar variables de entorno para datos sensibles</td>
+                <td><span class="severity-critical">CRITICAL</span></td>
+                <td><span class="status-badge status-compliant">COMPLIANT</span></td>
+                <td>A.9.4.2</td>
+            </tr>
+            </tbody></table></div>
+        
+        <div class="section"><h2>⚠️ Analysis by Severity</h2><h3>CRITICAL (3 controls - 13.6%)</h3><ul><li>CIS-3.1: No usar --privileged con contenedores en producción</li><li>CIS-5.5: No deshabilitar la actualización de restricciones</li><li>CIS-8.2: No usar variables de entorno para datos sensibles</li></ul><h3>HIGH (13 controls - 59.1%)</h3><ul><li>CIS-2.1: Ejecutar el daemon Docker en un grupo no-raíz</li><li>CIS-3.2: No usar --user=root</li><li>CIS-3.3: Usar capacidades Linux restrictivas</li><li>CIS-4.2: Verificar integridad de imágenes</li><li>CIS-4.4: Usar imágenes base de confianza</li><li>CIS-4.7: Remover SETUID y SETGID en imágenes</li><li>CIS-4.10: No usar bind mount de volúmenes sensibles</li><li>CIS-5.1: Verificar las políticas de AppArmor</li><li>CIS-5.2: Usar Seccomp para restringir syscalls</li><li>CIS-5.3: Usar SELinux para limitar contenedores</li><li>... and 3 more</li></ul><h3>MEDIUM (6 controls - 27.3%)</h3><ul><li>CIS-2.2: Separar el directorio de datos del daemon en una partición</li><li>CIS-2.9: Mantener la versión correcta de Docker</li><li>CIS-3.4: Montar /etc/shadow como read-only</li><li>CIS-4.1: Crear y usar imágenes personalizadas</li><li>CIS-4.3: Instalar solo paquetes necesarios</li><li>CIS-7.1: Actualizar Kubernetes/Orchestrator</li></ul></div>
+        
+        <div class="section"><h2>📁 Analysis by Category</h2><div class="chart">
+            <div class="bar">
+                <div class="bar-label">Access Control</div>
+                <div class="bar-container">
+                    <div class="bar-fill compliant" style="width: 0.0%">
+                        0%
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bar">
+                <div class="bar-label">Container Runtime</div>
+                <div class="bar-container">
+                    <div class="bar-fill compliant" style="width: 14.285714285714285%">
+                        14%
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bar">
+                <div class="bar-label">Hardening</div>
+                <div class="bar-container">
+                    <div class="bar-fill compliant" style="width: 0.0%">
+                        0%
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bar">
+                <div class="bar-label">Image Security</div>
+                <div class="bar-container">
+                    <div class="bar-fill compliant" style="width: 42.857142857142854%">
+                        43%
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bar">
+                <div class="bar-label">Patch Management</div>
+                <div class="bar-container">
+                    <div class="bar-fill compliant" style="width: 50.0%">
+                        50%
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bar">
+                <div class="bar-label">Secrets Management</div>
+                <div class="bar-container">
+                    <div class="bar-fill compliant" style="width: 50.0%">
+                        50%
+                    </div>
+                </div>
+            </div>
+            </div></div>
+        
+        <div class="section"><h2>🌐 ISO/IEC 27001 Coverage</h2><table><thead><tr><th>Domain</th><th>Compliant</th><th>Non-Compliant</th><th>Unknown</th><th>Coverage %</th></tr></thead><tbody>
+            <tr>
+                <td><strong>Access Control</strong></td>
+                <td><span class="status-badge status-compliant">1</span></td>
+                <td><span class="status-badge status-non-compliant">6</span></td>
+                <td><span class="status-badge status-unknown">4</span></td>
+                <td>9.1%</td>
+            </tr>
+            
+            <tr>
+                <td><strong>Operations Security</strong></td>
+                <td><span class="status-badge status-compliant">4</span></td>
+                <td><span class="status-badge status-non-compliant">2</span></td>
+                <td><span class="status-badge status-unknown">2</span></td>
+                <td>50.0%</td>
+            </tr>
+            
+            <tr>
+                <td><strong>Secure Development</strong></td>
+                <td><span class="status-badge status-compliant">1</span></td>
+                <td><span class="status-badge status-non-compliant">2</span></td>
+                <td><span class="status-badge status-unknown">1</span></td>
+                <td>25.0%</td>
+            </tr>
+            </tbody></table></div>
+        
+        <footer>
+            <p>Generated by DockAudit-SCA | Security Audit & Compliance Tool</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -39,6 +39,8 @@ pip install -r requirements.txt
 python main.py --target local --output html
 ```
 
+Ver: [PROJECT_STATE.md](PROJECT_STATE.md) para más comandos y opciones.
+
 ## SBOM and NVD
 
 The tool now extracts installed package dependencies from Docker images using common package managers (dpkg, rpm, apk), performs binary content analysis, scores findings by risk level, and correlates them with NVD vulnerabilities.
@@ -70,7 +72,11 @@ python main.py --target local --output html --sbom-dir reports/sbom --nvd-feed f
 
 ## Documentación adicional
 
-- Arquitectura y objetivos del proyecto: `docs/architecture.md`
+- 📋 **Estado Actual del Proyecto:** [PROJECT_STATE.md](PROJECT_STATE.md) - Resumen completo, métricas, arquitectura
+- 🏗️ **Arquitectura:** [docs/architecture.md](docs/architecture.md)
+- 🔍 **NVD Methodology:** [docs/nvd.md](docs/nvd.md)
+- 🔐 **Compliance Mapping (CIS ↔ ISO 27001):** [docs/compliance_mapping.md](docs/compliance_mapping.md)
+- 📘 **Compliance Guide (Guía Práctica):** [COMPLIANCE_GUIDE.md](COMPLIANCE_GUIDE.md)
 
 ## Notas
 

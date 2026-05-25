@@ -3,6 +3,7 @@ from dockaudit.host_audit.host_scanner import HostAudit
 from dockaudit.container_audit.container_scanner import ContainerAudit
 from dockaudit.image_analysis.image_scanner import ImageAnalysis
 from dockaudit.reporting.report_generator import ReportGenerator
+from dockaudit.compliance.evaluator import ComplianceEvaluator
 
 
 class Orchestrator:
@@ -12,11 +13,13 @@ class Orchestrator:
         output_format="html",
         severity="medium",
         sbom_dir="reports/sbom",
-        nvd_feed=None
+        nvd_feed=None,
+        compliance_enabled=True
     ):
         self.target = target
         self.output_format = output_format
         self.severity = severity
+        self.compliance_enabled = compliance_enabled
 
         # Inicialización de módulos
         self.host_audit = HostAudit(target)
@@ -50,6 +53,14 @@ class Orchestrator:
         results["binaries"] = image_results.get("binary_findings", [])
         results["vulnerabilities"] = image_results.get("vulnerabilities", [])
         results["sbom_path"] = image_results.get("sbom_path")
+
+        # Evaluar compliance si está habilitado
+        if self.compliance_enabled:
+            print("[*] Evaluando compliance (CIS Docker Benchmark & ISO/IEC 27001)...")
+            compliance_evaluator = ComplianceEvaluator(results)
+            results["compliance"] = compliance_evaluator.evaluate()
+            results["compliance_summary"] = compliance_evaluator.get_summary()
+            results["compliance_iso_coverage"] = compliance_evaluator.get_iso_coverage()
 
         print("[*] Auditoría finalizada.")
 
