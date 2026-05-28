@@ -5,7 +5,7 @@ class DummyContainers:
     def __init__(self, output):
         self.output = output
 
-    def run(self, image_id, command, remove, stdout, stderr, tty):
+    def run(self, image_id, command, remove, stdout, stderr, tty, **kwargs):
         return self.output
 
 
@@ -41,7 +41,7 @@ def test_package_extractor_no_package_manager():
 
 def test_package_extractor_handles_errors():
     class BrokenContainers:
-        def run(self, image_id, command, remove, stdout, stderr, tty):
+        def run(self, image_id, command, remove, stdout, stderr, tty, **kwargs):
             raise RuntimeError("container failed")
 
     class BrokenClient:

@@ -60,6 +60,20 @@ def parse_arguments():
         help="Ruta al archivo de feed NVD JSON o JSON.GZ"
     )
 
+    parser.add_argument(
+        "--container",
+        type=str,
+        default=None,
+        help="Nombre del contenedor específico a auditar (opcional, por defecto audita todos)"
+    )
+
+    parser.add_argument(
+        "--image",
+        type=str,
+        default=None,
+        help="Nombre/tag de la imagen Docker a auditar (p.ej. 'nginx:latest'). No requiere contenedor desplegado."
+    )
+
     return parser.parse_args()
 
 
@@ -75,11 +89,19 @@ def main():
         output_format=args.output,
         severity=args.severity,
         sbom_dir=args.sbom_dir,
-        nvd_feed=args.nvd_feed or None
+        nvd_feed=args.nvd_feed or None,
+        container_filter=args.container,
+        image_filter=args.image
     )
 
     results = orchestrator.run_audit()
-    orchestrator.generate_report(results)
+    
+    # Only generate report if audit was successful
+    if results and results.get("host") is not None:
+        orchestrator.generate_report(results)
+    else:
+        print("[*] Auditoría abortada. No se generaron reportes.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

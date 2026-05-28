@@ -20,7 +20,7 @@ class DummyImages:
 
 
 class DummyContainers:
-    def run(self, image_id, command, remove, stdout, stderr, tty):
+    def run(self, image_id, command, remove, stdout, stderr, tty, **kwargs):
         return b"python 3.11.5\n"
 
 

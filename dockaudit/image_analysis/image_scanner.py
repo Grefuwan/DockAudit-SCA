@@ -9,16 +9,44 @@ from dockaudit.sca.vulnerability_matcher import VulnerabilityMatcher
 
 
 class ImageAnalysis:
-    def __init__(self, target="local", sbom_dir="reports/sbom", nvd_feed=None):
+    def __init__(self, target="local", sbom_dir="reports/sbom", nvd_feed=None, container_filter=None, image_filter=None):
         self.target = target
         self.sbom_generator = SBOMGenerator(output_dir=sbom_dir)
         self.nvd_feed = nvd_feed
         self.package_extractor = None
+        self.container_filter = container_filter
+        self.image_filter = image_filter
 
     def run(self):
         try:
             client = docker.from_env()
-            images = client.images.list()
+            
+            # Si hay un filtro de contenedor, solo analizar las imágenes de esos contenedores
+            if self.container_filter:
+                containers = client.containers.list(all=True)
+                containers = [c for c in containers if c.name == self.container_filter or self.container_filter in c.name]
+                
+                if not containers:
+                    return {
+                        "findings": [],
+                        "vulnerabilities": [],
+                        "sbom_path": None,
+                        "binary_findings": []
+                    }
+                
+                # Obtener solo las imágenes de los contenedores filtrados
+                image_ids = set(c.attrs.get("Image") for c in containers if c.attrs.get("Image"))
+                images = []
+                for image_id in image_ids:
+                    try:
+                        images.append(client.images.get(image_id))
+                    except:
+                        pass
+            elif self.image_filter:
+                all_images = client.images.list()
+                images = [img for img in all_images if any(self.image_filter in tag for tag in img.tags)]
+            else:
+                images = client.images.list()
         except Exception as exc:
             return {
                 "findings": [
@@ -31,10 +59,12 @@ class ImageAnalysis:
                     }
                 ],
                 "vulnerabilities": [],
-                "sbom_path": None
+                "sbom_path": None,
+                "binary_findings": []
             }
 
         findings = []
+        images_metadata = []
 
         if not images:
             findings.append({
@@ -48,6 +78,14 @@ class ImageAnalysis:
         for image in images:
             tags = image.tags or ["<none>:<none>"]
             tag_string = ", ".join(tags)
+            image_name = tags[0] if tags else "<none>:<none>"
+            registry = self._extract_registry(image_name)
+            healthcheck = bool(image.attrs.get("Config", {}).get("Healthcheck")) if getattr(image, "attrs", None) else False
+            package_count = 0
+
+            if self.package_extractor:
+                packages, status = self.package_extractor.extract(image)
+                package_count = len(packages) if isinstance(packages, list) else 0
 
             if any(tag.endswith(":latest") for tag in tags):
                 severity = "medium"
@@ -73,6 +111,22 @@ class ImageAnalysis:
                 "recommendation": recommendation
             })
 
+            img_env_vars = {}
+            for env_str in (getattr(image, "attrs", {}) or {}).get("Config", {}).get("Env", []) or []:
+                if "=" in env_str:
+                    key, _, val = env_str.partition("=")
+                    img_env_vars[key] = val
+
+            images_metadata.append({
+                "name": image_name,
+                "registry": registry,
+                "tags": tags,
+                "healthcheck": healthcheck,
+                "packages": package_count,
+                "env_vars": img_env_vars,
+                "is_official": "/" not in image_name.replace("docker.io/library/", "").split(":")[0]
+            })
+
         try:
             client = docker.from_env()
             self.package_extractor = PackageExtractor(client)
@@ -85,7 +139,8 @@ class ImageAnalysis:
         package_components = []
         for image in images:
             if self.package_extractor:
-                packages, status = self.package_extractor.extract(image)
+                # Use shorter timeout for package extraction to avoid hanging on large images
+                packages, status = self.package_extractor.extract(image, timeout=10)
                 if packages:
                     findings.append({
                         "id": f"IMG-PKG-{image.id[:8]}",
@@ -132,5 +187,19 @@ class ImageAnalysis:
             "findings": findings,
             "vulnerabilities": vulnerabilities,
             "sbom_path": sbom_path,
-            "binary_findings": binary_findings
+            "binary_findings": binary_findings,
+            "images": images_metadata
         }
+
+    def _extract_registry(self, image_name):
+        if not image_name:
+            return ""
+
+        if "/" not in image_name:
+            return "docker.io"
+
+        parts = image_name.split("/")
+        if "." in parts[0] or ":" in parts[0]:
+            return parts[0]
+
+        return "docker.io"

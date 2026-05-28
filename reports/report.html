@@ -24,8 +24,8 @@
     <p>Resumen de hallazgos:</p>
     <ul>
       <li>Host: 0</li>
-      <li>Contenedores: 1</li>
-      <li>Imágenes: 3</li>
+      <li>Contenedores: 0</li>
+      <li>Imágenes: 2</li>
       <li>Binarios: 0</li>
       <li>Vulnerabilidades: 0</li>
     </ul>
@@ -42,14 +42,7 @@
   <section>
     <h2>Containers</h2>
     
-      
-      <article class="finding severity-high">
-        <h3>CONT-002 — Privileged container detected: test-audit-container</h3>
-        <p><strong>Severidad:</strong> high (riesgo 4)</p>
-        <p>A container is running with privileged access.</p>
-        <p class="recommendation">Recomendación: Avoid privileged containers unless strictly required.</p>
-      </article>
-      
+      <p>No hay hallazgos que cumplan el nivel mínimo de severidad.</p>
     
   </section>
   
@@ -58,23 +51,16 @@
     
       
       <article class="finding severity-medium">
-        <h3>IMG-3289 — Image tagged with latest</h3>
+        <h3>IMG-5737 — Image tagged with latest</h3>
         <p><strong>Severidad:</strong> medium (riesgo 3)</p>
-        <p>Image tags test-audit-image:latest use the latest tag, which is not immutable.</p>
+        <p>Image tags bkimminich/juice-shop:latest use the latest tag, which is not immutable.</p>
         <p class="recommendation">Recomendación: Use explicit immutable tags instead of &#39;latest&#39;.</p>
       </article>
       
       <article class="finding severity-medium">
-        <h3>IMG-1758 — Image tagged with latest</h3>
+        <h3>IMG-PKG-ERR-sha256:2 — Package extraction failed for image bkimminich/juice-shop:latest</h3>
         <p><strong>Severidad:</strong> medium (riesgo 3)</p>
-        <p>Image tags hello-world:latest use the latest tag, which is not immutable.</p>
-        <p class="recommendation">Recomendación: Use explicit immutable tags instead of &#39;latest&#39;.</p>
-      </article>
-      
-      <article class="finding severity-medium">
-        <h3>IMG-PKG-ERR-sha256:0 — Package extraction failed for image hello-world:latest</h3>
-        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
-        <p>400 Client Error for http+docker://localhost/v1.54/containers/b76bbcb0f052c04c5ea58759782bcd84c122e17a9a594d598352488879301ca2/start: Bad Request (&#34;failed to create task for container: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: &#34;sh&#34;: executable file not found in $PATH&#34;)</p>
+        <p>timeout: package extraction took too long</p>
         <p class="recommendation">Recomendación: Verify Docker can run the image and that the image supports package inspection.</p>
       </article>
       
@@ -92,6 +78,384 @@
     <h2>Vulnerabilities</h2>
     
       <p>No hay hallazgos que cumplan el nivel mínimo de severidad.</p>
+    
+  </section>
+  
+  <section>
+    <h2>Compliance</h2>
+    
+      
+      <article class="finding severity-medium">
+        <h3> — Separar partición /var</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Crear una partición separada para /var en el host Docker.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Separar partición /var/lib/docker</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Crear una partición separada para el directorio de datos de Docker.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Separar partición /var/log</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Crear una partición separada para los logs.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Separar partición /var/log/audit</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Crear una partición separada para los logs de auditoría.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Configurar parámetros restrictivos del kernel</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Aplicar parámetros de kernel restrictivos para mayor seguridad.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Deshabilitar carga de módulos del kernel</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Asegurar que la carga de módulos del kernel está controlada.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Permisos del socket del daemon</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Asegurar permisos restrictivos en /var/run/docker.sock.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Propiedad del socket del daemon</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Asegurar que /var/run/docker.sock pertenece al usuario y grupo correctos.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Verificación de certificados del daemon</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Verificar certificados TLS configurados para el daemon.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Habilitar TLS en el daemon</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Asegurar que el daemon exige TLS para conexiones remotas.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Autenticación/Autorización del daemon</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Asegurar mecanismos de autenticación y autorización para la API del daemon.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Certificados de registro y comunicación</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Asegurar certificados para comunicación con registries privados.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Ejecutar el daemon Docker en un grupo no-raíz</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>El daemon Docker debe ejecutarse bajo un usuario no-root para limitar los daños potenciales por vulnerabilidades.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Separar el directorio de datos del daemon en una partición</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>El directorio de datos del daemon Docker debe estar en una partición separada.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Mantener la versión correcta de Docker</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Mantener Docker Engine actualizado con la última versión estable.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Deshabilitar userland proxy</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Deshabilitar userland proxy para mejorar seguridad de networking.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Deshabilitar inter-container communication (icc)</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Deshabilitar icc para prevenir comunicación no deseada entre contenedores.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Configurar controlador de logs apropiado</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Configurar un driver de logs seguro y centralizado.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-critical">
+        <h3> — No usar --privileged con contenedores en producción</h3>
+        <p><strong>Severidad:</strong> critical (riesgo 5)</p>
+        <p>Los contenedores no deben ejecutarse con el flag --privileged en producción.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — No usar --user=root</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Usar el flag --user para ejecutar contenedores con usuarios no-root.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Usar capacidades Linux restrictivas</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Remover capabilities innecesarias y mantener solo las requeridas.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Montar /etc/shadow como read-only</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Los archivos sensibles como /etc/shadow deben montarse como read-only.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Permisos de archivos de configuración del daemon</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Asegurar permisos restrictivos en archivos de configuración del daemon Docker.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Propiedad de archivos de configuración del daemon</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Asegurar que los archivos de configuración pertenecen a root y grupo apropiado.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Crear y usar imágenes personalizadas</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Crear imágenes Docker personalizadas en lugar de usar imágenes genéricas.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Verificar integridad de imágenes</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Verificar la integridad de imágenes Docker usando firmas digitales.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Instalar solo paquetes necesarios</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Minimizar la superficie de ataque instalando solo paquetes esenciales.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Usar imágenes base de confianza</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Usar solo imágenes base de registros confiables y verificadas.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Remover SETUID y SETGID en imágenes</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Remover binarios con bit SETUID/SETGID innecesarios.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — No usar bind mount de volúmenes sensibles</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>No montar volúmenes que contengan datos sensibles del host.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-critical">
+        <h3> — No incluir secretos en las imágenes</h3>
+        <p><strong>Severidad:</strong> critical (riesgo 5)</p>
+        <p>Asegurarse de que las imágenes no contengan secretos hardcodeados.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — No usar credenciales en variables de entorno dentro de imagen</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Evitar variables de entorno con credenciales en las imágenes.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Definir healthchecks en Dockerfile</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Incluir instrucciones HEALTHCHECK para garantizar disponibilidad y detectar fallos.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Limitar PIDs cgroup</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Establecer límites de PIDs por contenedor para evitar fork bombs.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Verificar las políticas de AppArmor</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Usar AppArmor o SELinux para controlar el acceso de contenedores.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Usar Seccomp para restringir syscalls</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Aplicar perfiles Seccomp para limitar system calls disponibles.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Usar SELinux para limitar contenedores</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Configurar SELinux labels para restricciones adicionales.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-critical">
+        <h3> — No deshabilitar la actualización de restricciones</h3>
+        <p><strong>Severidad:</strong> critical (riesgo 5)</p>
+        <p>No usar --security-opt=&#39;apparmor=unconfined&#39;.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Restringir tráfico entre contenedores</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Aplicar políticas de red para restringir el tráfico entre contenedores cuando no sea necesario.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Limitar uso de CPU</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Establecer límites de CPU para contenedores para prevenir agotamiento de recursos.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Limitar memoria de contenedores</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Establecer límites de memoria para cada contenedor.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Sistema de archivos raíz en solo lectura</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Montar el sistema de archivos raíz del contenedor como read-only cuando sea posible.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Verificar permisos de volúmenes montados</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Asegurarse de que los volúmenes montados no introduzcan permisos inseguros.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Escanear imágenes en busca de vulnerabilidades</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Escanear imágenes con herramientas de análisis de vulnerabilidades.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Permitir solo imágenes confiables</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Implementar políticas para permitir solo imágenes verificadas.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Restringir registries usados</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Limitar registries permitidos y bloquear registries inseguros.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Cifrado de secretos en repositorios</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Asegurar que los secretos están cifrados cuando son almacenados.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-critical">
+        <h3> — Propiedad segura de docker.sock</h3>
+        <p><strong>Severidad:</strong> critical (riesgo 5)</p>
+        <p>Asegurar propiedad y permisos correctos de docker.sock para evitar escalada.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Rotación de secretos</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Implementar rotación periódica de secretos en pipelines y plataformas.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Autenticación para pull/push</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Asegurar autenticación fuerte para actividades pull/push en registries.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Habilitar logging de auditoría</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Registrar eventos relevantes de imágenes y pulls/pushes para auditoría.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-medium">
+        <h3> — Verificar logs de auditoría</h3>
+        <p><strong>Severidad:</strong> medium (riesgo 3)</p>
+        <p>Corroborar que los logs de auditoría son revisados y almacenados.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
+      <article class="finding severity-high">
+        <h3> — Auditoría del daemon</h3>
+        <p><strong>Severidad:</strong> high (riesgo 4)</p>
+        <p>Asegurar que el daemon y eventos de contenedores son auditados.</p>
+        <p class="recommendation">Recomendación: </p>
+      </article>
+      
     
   </section>
   

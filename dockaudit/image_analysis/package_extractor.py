@@ -1,4 +1,6 @@
 import re
+import subprocess
+import signal
 
 from docker.errors import DockerException
 
@@ -13,9 +15,18 @@ class PackageExtractor:
     def __init__(self, client):
         self.client = client
 
-    def extract(self, image):
+    def extract(self, image, timeout=15):
+        """
+        Extract packages from image with timeout protection.
+        
+        Args:
+            image: Docker image object
+            timeout: Maximum seconds to wait for package extraction
+        """
         try:
-            output = self._run_package_list(image)
+            output = self._run_package_list(image, timeout)
+        except TimeoutError:
+            return [], "timeout: package extraction took too long"
         except Exception as exc:
             return [], str(exc)
 
@@ -28,7 +39,7 @@ class PackageExtractor:
         packages = self._parse_packages(output)
         return packages, "ok"
 
-    def _run_package_list(self, image):
+    def _run_package_list(self, image, timeout=15):
         command = [
             "sh",
             "-c",
@@ -38,14 +49,21 @@ class PackageExtractor:
             "else echo NO_PKG_MGR; fi"
         ]
 
-        return self.client.containers.run(
-            image.id,
-            command,
-            remove=True,
-            stdout=True,
-            stderr=True,
-            tty=False
-        ).decode("utf-8", errors="replace")
+        try:
+            result = self.client.containers.run(
+                image.id,
+                command,
+                remove=True,
+                stdout=True,
+                stderr=True,
+                tty=False,
+                timeout=timeout
+            )
+            return result.decode("utf-8", errors="replace")
+        except Exception as e:
+            if "timeout" in str(e).lower():
+                raise TimeoutError(f"Package extraction timeout after {timeout}s")
+            raise
 
     def _parse_packages(self, output):
         packages = []

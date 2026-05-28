@@ -63,6 +63,10 @@
 - **Mapping:** 22 controles CIS mapeados a ISO 27001
 - **Evaluator:** 40+ métodos de validación automática
 - Análisis por severidad, categoría, dominio ISO
+- **Cobertura:** 31.9% de CIS Docker Benchmark 1.6 (~22 de 69 controles)
+  - ✅ Daemon Config, Container Runtime, Security Ops
+  - ❌ Host Config (Sección 1), otros controles específicos
+  - 📊 Ver: [CIS_COVERAGE_ANALYSIS.md](CIS_COVERAGE_ANALYSIS.md)
 
 ### 6. **Reporting** (2 generadores)
 - **ReportGenerator:** Reportes auditoría HTML/JSON

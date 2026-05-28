@@ -47,7 +47,20 @@ class TestComplianceEvaluator:
         
         assert evaluator.audit_results == audit_results
         assert evaluator.mapping == COMPLIANCE_MAPPING
-    
+
+    def test_evaluator_normalizes_orchestrator_results(self):
+        """Test evaluator can normalize orchestrator audit results."""
+        audit_results = {
+            "host": [{"id": "HOST-001", "title": "Docker version detected"}],
+            "containers": [],
+            "images": []
+        }
+
+        evaluator = ComplianceEvaluator(audit_results)
+        findings = evaluator.evaluate()
+
+        assert isinstance(findings, list)
+
     def test_evaluator_with_privileged_container(self):
         """Test detection of privileged containers."""
         audit_results = {
@@ -134,7 +147,7 @@ class TestComplianceEvaluator:
         iso_coverage = evaluator.get_iso_coverage()
         
         assert "Access Control" in iso_coverage
-        assert "Operations Security" in iso_coverage
+        assert "Vulnerability Management" in iso_coverage
     
     def test_with_setuid_binaries(self):
         """Test SETUID binary detection."""

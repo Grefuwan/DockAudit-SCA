@@ -77,6 +77,8 @@ python main.py --target local --output html --sbom-dir reports/sbom --nvd-feed f
 - 🔍 **NVD Methodology:** [docs/nvd.md](docs/nvd.md)
 - 🔐 **Compliance Mapping (CIS ↔ ISO 27001):** [docs/compliance_mapping.md](docs/compliance_mapping.md)
 - 📘 **Compliance Guide (Guía Práctica):** [COMPLIANCE_GUIDE.md](COMPLIANCE_GUIDE.md)
+- 📊 **CIS Coverage Analysis:** [CIS_COVERAGE_ANALYSIS.md](CIS_COVERAGE_ANALYSIS.md) - Análisis detallado de cobertura CIS Docker 1.6
+- ✅ **Table Verification:** [TABLE_VERIFICATION.md](TABLE_VERIFICATION.md) - Verificación CIS 1.6 ↔ ISO 27001:2022
 
 ## Notas
 

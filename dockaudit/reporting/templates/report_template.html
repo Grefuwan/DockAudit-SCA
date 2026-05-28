@@ -21,6 +21,7 @@
 <body>
   <h1>DockAudit-SCA Report</h1>
   <div class="summary">
+    <p><strong>Audit target:</strong> {{ audit_target }}</p>
     <p>Resumen de hallazgos:</p>
     <ul>
       <li>Host: {{ summary.host if summary.host is defined else 0 }}</li>

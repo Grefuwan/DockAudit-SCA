@@ -35,7 +35,8 @@ def test_container_audit_no_containers(monkeypatch):
     dummy = DummyDocker([])
     monkeypatch.setattr("dockaudit.container_audit.container_scanner.docker.from_env", lambda: dummy)
 
-    findings = audit.run()
+    result = audit.run()
+    findings = result["findings"]
     assert len(findings) == 1
     assert findings[0]["id"] == "CONT-001"
 
@@ -50,8 +51,8 @@ def test_container_audit_privileged(monkeypatch):
     dummy = DummyDocker([container])
     monkeypatch.setattr("dockaudit.container_audit.container_scanner.docker.from_env", lambda: dummy)
 
-    findings = audit.run()
-    assert any(item["id"] == "CONT-002" for item in findings)
+    result = audit.run()
+    assert any(item["id"] == "CONT-002" for item in result["findings"])
 
 
 def test_container_audit_docker_failure(monkeypatch):
@@ -64,5 +65,5 @@ def test_container_audit_docker_failure(monkeypatch):
         raise FakeError("failed")
 
     monkeypatch.setattr("dockaudit.container_audit.container_scanner.docker.from_env", raise_error)
-    findings = audit.run()
-    assert findings[0]["severity"] == "critical"
+    result = audit.run()
+    assert result["findings"][0]["severity"] == "critical"

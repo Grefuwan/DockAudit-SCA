@@ -31,7 +31,7 @@ class ReportGenerator:
         )
         return env.get_template("report_template.html")
 
-    def generate(self, results):
+    def generate(self, results, audit_target="All Containers"):
         os.makedirs("reports", exist_ok=True)
 
         filtered_results = {}
@@ -64,7 +64,8 @@ class ReportGenerator:
                 section: len(items)
                 for section, items in filtered_results.items()
             },
-            sbom_path=results.get("sbom_path")
+            sbom_path=results.get("sbom_path"),
+            audit_target=audit_target
         )
 
         out_path = os.path.join("reports", "report.html")
