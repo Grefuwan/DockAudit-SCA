@@ -86,7 +86,6 @@ python main.py [opciones]
 
 | Opción | Valor por defecto | Descripción |
 |---|---|---|
-| `--target` | `local` | Objetivo de auditoría |
 | `--output` | `html` | Formato del reporte principal (`html` o `json`) |
 | `--severity` | `medium` | Severidad mínima a mostrar (`info`, `low`, `medium`, `high`, `critical`) |
 | `--sbom-dir` | `reports/sbom` | Directorio de salida para los archivos SBOM |

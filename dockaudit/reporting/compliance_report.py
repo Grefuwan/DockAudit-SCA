@@ -15,9 +15,7 @@ class ComplianceReportGenerator:
         self.generated_at = datetime.now().isoformat()
         self.audit_target = audit_target
 
-    # ------------------------------------------------------------------
     # Public API
-    # ------------------------------------------------------------------
 
     def to_json(self, pretty=True):
         report = {
@@ -81,9 +79,7 @@ class ComplianceReportGenerator:
         ]
         return "\n".join(parts)
 
-    # ------------------------------------------------------------------
     # CSS
-    # ------------------------------------------------------------------
 
     def _css(self):
         return """
@@ -425,9 +421,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
 }
 """
 
-    # ------------------------------------------------------------------
     # JavaScript
-    # ------------------------------------------------------------------
 
     def _js(self, summary):
         c = summary['compliant']
@@ -533,9 +527,7 @@ function collapseAll() {{
 }}
 """
 
-    # ------------------------------------------------------------------
     # HTML sections
-    # ------------------------------------------------------------------
 
     def _html_header(self):
         return (
@@ -793,9 +785,7 @@ function collapseAll() {{
 </div>
 """
 
-    # ------------------------------------------------------------------
     # Data helpers
-    # ------------------------------------------------------------------
 
     def _generate_summary(self):
         total        = len(self.compliance_findings)

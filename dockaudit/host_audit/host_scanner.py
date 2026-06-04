@@ -11,11 +11,6 @@ class HostAudit:
         self.host_info = {}
 
     def run(self):
-        """
-        Ejecuta todas las comprobaciones de seguridad del host Docker.
-        Devuelve un diccionario con hallazgos y metadatos.
-        """
-
         self.daemon_config = self._load_daemon_config()
         self.host_info = self._inspect_docker_socket()
         self.host_info.update(self._load_docker_info())
@@ -33,10 +28,6 @@ class HostAudit:
             "daemon_config": self.daemon_config,
             "host_info": self.host_info
         }
-
-    # ---------------------------------------------------
-    # CHECK 1 — Versión de Docker
-    # ---------------------------------------------------
 
     def check_docker_version(self):
         try:
@@ -74,10 +65,6 @@ class HostAudit:
                 "recommendation": "Check execution environment."
             })
 
-    # ---------------------------------------------------
-    # CHECK 2 — Permisos del socket Docker
-    # ---------------------------------------------------
-
     def check_docker_socket_permissions(self):
         socket_path = "/var/run/docker.sock"
 
@@ -110,10 +97,6 @@ class HostAudit:
                 "description": "docker.sock file does not exist.",
                 "recommendation": "Verify Docker daemon status."
             })
-
-    # ---------------------------------------------------
-    # CHECK 3 — Configuración del daemon
-    # ---------------------------------------------------
 
     def check_daemon_configuration(self):
         daemon_config_path = "/etc/docker/daemon.json"

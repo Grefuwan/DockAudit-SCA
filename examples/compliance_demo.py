@@ -23,7 +23,7 @@ def demo_mapping():
     for cis_id in example_controls:
         if cis_id in COMPLIANCE_MAPPING:
             control = COMPLIANCE_MAPPING[cis_id]
-            print(f"\n📌 {cis_id}: {control['title']}")
+            print(f"\n{cis_id}: {control['title']}")
             print(f"   Severity: {control['severity'].upper()}")
             print(f"   Category: {control['category']}")
             print(f"   Description: {control['description']}")
@@ -90,29 +90,29 @@ def demo_evaluation():
     # Get summary
     summary = evaluator.get_summary()
     
-    print(f"📊 Compliance Summary:")
+    print("Compliance Summary:")
     print(f"   Total Controls: {summary['total_controls']}")
-    print(f"   ✅ Compliant: {summary['compliant']}")
-    print(f"   ❌ Non-Compliant: {summary['non_compliant']}")
-    print(f"   ❓ Unknown: {summary['unknown']}")
+    print(f"   Compliant: {summary['compliant']}")
+    print(f"   Non-Compliant: {summary['non_compliant']}")
+    print(f"   Unknown: {summary['unknown']}")
     print(f"   Compliance Rate: {summary['compliance_percentage']:.1f}%")
     
-    print(f"\n📋 Critical Issues Found:")
+    print("\nCritical Issues Found:")
     critical_findings = [f for f in compliance_findings if f["severity"] == "critical"]
     for finding in critical_findings[:3]:
         print(f"   • {finding['cis_control']}: {finding['title']}")
         if finding["status"] == "non_compliant":
-            print(f"     Status: ⚠️  NON-COMPLIANT")
+            print(f"     Status: NON-COMPLIANT")
             print(f"     Details: {finding['details']}")
     
-    print(f"\n🗂️  Findings by Category:")
+    print("\nFindings by Category:")
     by_category = evaluator.get_by_category()
     for category, findings in by_category.items():
         compliant = sum(1 for f in findings if f["status"] == "compliant")
         non_compliant = sum(1 for f in findings if f["status"] == "non_compliant")
-        print(f"   {category}: {compliant} ✅ / {non_compliant} ❌")
-    
-    print(f"\n🌐 ISO/IEC 27001 Coverage:")
+        print(f"   {category}: {compliant} compliant / {non_compliant} non-compliant")
+
+    print("\nISO/IEC 27001 Coverage:")
     iso_coverage = evaluator.get_iso_coverage()
     for domain, data in sorted(iso_coverage.items())[:3]:
         coverage = (data["compliant"] / data["total"] * 100) if data["total"] > 0 else 0
@@ -132,20 +132,20 @@ def demo_report_generation(compliance_findings):
     
     # Generate JSON report
     json_report = generator.to_json(pretty=False)
-    print(f"✅ JSON Report Generated: {len(json_report)} bytes")
-    
+    print(f"JSON report generated: {len(json_report)} bytes")
+
     # Generate HTML report
     html_report = generator.to_html(title="DockAudit-SCA - Sample Compliance Report")
-    print(f"✅ HTML Report Generated: {len(html_report)} bytes")
-    
+    print(f"HTML report generated: {len(html_report)} bytes")
+
     # Save reports
     with open("reports/compliance_sample.json", "w") as f:
         f.write(generator.to_json(pretty=True))
-    print("💾 Saved: reports/compliance_sample.json")
-    
+    print("Saved: reports/compliance_sample.json")
+
     with open("reports/compliance_sample.html", "w") as f:
         f.write(html_report)
-    print("💾 Saved: reports/compliance_sample.html")
+    print("Saved: reports/compliance_sample.html")
 
 
 def main():
@@ -155,10 +155,10 @@ def main():
     demo_report_generation(compliance_findings)
     
     print("\n" + "=" * 80)
-    print("✅ Demonstration Complete!")
+    print("Demonstration complete.")
     print("=" * 80)
     print("\nNext steps:")
-    print("1. Review the mapping documentation: docs/compliance_mapping.md")
+    print("1. Review the manual: docs/MANUAL.md")
     print("2. Run the full audit with compliance: ./scripts/run_real_integration.sh")
     print("3. Check the generated compliance reports in 'reports/' directory")
 

@@ -26,7 +26,6 @@ class Orchestrator:
         self.container_filter = container_filter
         self.image_filter = image_filter
 
-        # Inicialización de módulos
         self.host_audit = HostAudit(target)
         self.container_audit = ContainerAudit(target, container_filter=container_filter)
         self.image_analysis = ImageAnalysis(
@@ -99,19 +98,16 @@ class Orchestrator:
             "image_analysis": {}
         }
 
-        # Ejecutar auditoría de host
         print("[*] Ejecutando auditoría del host...")
         host_results = self.host_audit.run()
         results["host"] = host_results.get("findings", host_results if isinstance(host_results, list) else [])
         results["host_audit"] = host_results if isinstance(host_results, dict) else {"findings": host_results}
 
-        # Ejecutar auditoría de contenedores
         print("[*] Ejecutando auditoría de contenedores...")
         container_results = self.container_audit.run()
         results["containers"] = container_results.get("findings", container_results if isinstance(container_results, list) else [])
         results["container_audit"] = container_results if isinstance(container_results, dict) else {"findings": container_results}
 
-        # Ejecutar análisis de imágenes
         print("[*] Ejecutando análisis de imágenes...")
         image_results = self.image_analysis.run()
         results["images"] = image_results.get("findings", [])
@@ -120,7 +116,6 @@ class Orchestrator:
         results["sbom_path"] = image_results.get("sbom_path")
         results["image_analysis"] = image_results
 
-        # Evaluar compliance si está habilitado
         if self.compliance_enabled:
             print("[*] Evaluando compliance (CIS Docker Benchmark & ISO/IEC 27001)...")
             compliance_evaluator = ComplianceEvaluator(results)
@@ -138,7 +133,6 @@ class Orchestrator:
         import os
         from datetime import datetime
         
-        # Skip report generation if no results
         if not results:
             return
         
@@ -151,11 +145,8 @@ class Orchestrator:
             audit_target = "All Containers"
         self.report_generator.generate(results, audit_target=audit_target)
         
-        # Generate compliance report if compliance findings exist
         if "compliance" in results and results["compliance"]:
             compliance_findings = results["compliance"]
-            
-            # Determine audit target
             if self.container_filter:
                 audit_target = f"Container: {self.container_filter}"
             elif self.image_filter:
@@ -163,7 +154,6 @@ class Orchestrator:
             else:
                 audit_target = "All Containers"
 
-            # Create timestamp-based filename
             timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
             if self.container_filter:
                 suffix = self.container_filter.replace("/", "_")
@@ -175,7 +165,6 @@ class Orchestrator:
             
             compliance_gen = ComplianceReportGenerator(compliance_findings, audit_target=audit_target)
             
-            # Generate JSON compliance report
             json_report = compliance_gen.to_json(pretty=True)
             json_path = f"reports/{base_filename}.json"
             os.makedirs("reports", exist_ok=True)
@@ -183,14 +172,12 @@ class Orchestrator:
                 f.write(json_report)
             print(f"[+] Compliance JSON report written to: {json_path}")
             
-            # Generate HTML compliance report
             html_report = compliance_gen.to_html()
             html_path = f"reports/{base_filename}.html"
             with open(html_path, "w", encoding="utf-8") as f:
                 f.write(html_report)
             print(f"[+] Compliance HTML report written to: {html_path}")
             
-            # Print summary
             summary = results.get("compliance_summary", {})
             if summary:
                 print(f"\n=== CIS Docker Benchmark & ISO/IEC 27001 Compliance Summary ===")

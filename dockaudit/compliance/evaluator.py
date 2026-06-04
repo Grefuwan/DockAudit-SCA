@@ -25,9 +25,7 @@ class ComplianceEvaluator:
         self.compliance_findings = []
         self._normalize_audit_results()
 
-    # ------------------------------------------------------------------
     # Normalisation
-    # ------------------------------------------------------------------
 
     def _normalize_audit_results(self):
         if "host_audit" not in self.audit_results and "host" in self.audit_results:
@@ -61,9 +59,7 @@ class ComplianceEvaluator:
                 "vulnerabilities", self.audit_results["vulnerabilities"]
             )
 
-    # ------------------------------------------------------------------
     # Helpers
-    # ------------------------------------------------------------------
 
     def _get_host_info(self):
         return self.audit_results.get("host_audit", {}).get("host_info", {})
@@ -112,9 +108,7 @@ class ComplianceEvaluator:
                 found.append(key)
         return found
 
-    # ------------------------------------------------------------------
     # Evaluation engine
-    # ------------------------------------------------------------------
 
     def evaluate(self):
         self.compliance_findings = []
@@ -218,9 +212,7 @@ class ComplianceEvaluator:
             return "unknown", {"reason": f"Check not implemented: {impl_path}"}
         return check_func()
 
-    # =========================================================================
     # Host audit checks
-    # =========================================================================
 
     def _check_daemon_user(self):
         host_info = self._get_host_info()
@@ -592,9 +584,7 @@ class ComplianceEvaluator:
             "recommendation": "Install and configure auditd with Docker-specific rules",
         }
 
-    # =========================================================================
     # Container audit checks
-    # =========================================================================
 
     def _check_privileged_mode(self):
         containers = self._get_containers()
@@ -816,9 +806,7 @@ class ComplianceEvaluator:
             }
         return "compliant", {"reason": "PID limits configured on all containers"}
 
-    # =========================================================================
     # Image analysis checks
-    # =========================================================================
 
     def _check_custom_images(self):
         images = self._get_images()
@@ -931,9 +919,7 @@ class ComplianceEvaluator:
             return "non_compliant", {"issue": "High severity vulnerabilities found", "high": high}
         return "compliant", {"reason": "Vulnerability scan completed with no critical/high findings"}
 
-    # =========================================================================
     # Binary analyzer checks
-    # =========================================================================
 
     def _check_setuid_binaries(self):
         binaries = self.audit_results.get("image_analysis", {}).get("binaries", [])
@@ -946,9 +932,7 @@ class ComplianceEvaluator:
             }
         return "compliant", {"reason": "No SETUID/SETGID binaries found"}
 
-    # =========================================================================
     # Orchestrator checks
-    # =========================================================================
 
     def _check_trusted_images_policy(self):
         images = self._get_images()
@@ -1071,9 +1055,7 @@ class ComplianceEvaluator:
             "recommendation": "Implement regular backups of Swarm state (/var/lib/docker/swarm/)",
         }
 
-    # =========================================================================
     # Reporting methods
-    # =========================================================================
 
     def get_summary(self):
         if not self.compliance_findings:
