@@ -106,8 +106,11 @@ python main.py --container dvwa
 # Auditar una imagen pulleada pero sin contenedor desplegado
 python main.py --image nginx:latest
 
-# Auditoría con feed NVD local para correlación de CVEs
-python main.py --nvd-feed feeds/nvdcve-1.1-2024.json.gz
+# Auditoría con el feed de demo incluido (15 CVEs reales)
+python main.py --nvd-feed sample_nvd.json
+
+# Auditoría con feed NVD completo descargado
+python main.py --nvd-feed feeds/nvdcve-2.0-2024.json
 
 # Auditoría filtrando hallazgos de severidad alta o crítica
 python main.py --severity high
@@ -413,41 +416,69 @@ Imagen Docker
           │
           ├─ NVDParser.load_feed(path)   ← feed NVD local
           │        │
-          │    20 000+ CVEs parseados
+          │    CVEs parseados (formato NVD API v2)
           │
           └─ match_components(paquetes)
                    │
                Lista de CVEs con ID, descripción, paquete afectado
 ```
 
-### Feeds NVD
+### Feed de demo incluido
 
-La herramienta trabaja con feeds locales en formato NVD JSON Feed 1.1 (NIST). No realiza llamadas a la API NVD en tiempo real.
+El repositorio incluye `sample_nvd.json`, un feed en **formato NVD API 2.0** con **15 CVEs reales** seleccionados por su relevancia en entornos Docker:
 
-**Descargar un feed oficial:**
+| CVE | Paquete afectado | Descripción resumida |
+|---|---|---|
+| CVE-2021-44228 | `log4j` | Log4Shell — ejecución remota de código |
+| CVE-2022-0778 | `openssl` | Bucle infinito en BN_mod_sqrt (DoS) |
+| CVE-2022-1292 | `openssl` | Inyección de comandos en c_rehash |
+| CVE-2023-0286 | `openssl` | Confusión de tipos en X.400 (lectura de memoria) |
+| CVE-2021-3156 | `sudo` | Baron Samedit — escalada de privilegios a root |
+| CVE-2022-32207 | `curl` | Permisos incorrectos al guardar cookies/HSTS |
+| CVE-2022-42915 | `curl` | Double-free en código de proxy HTTP |
+| CVE-2023-38408 | `openssh` | RCE en ssh-agent vía PKCS#11 |
+| CVE-2022-37434 | `zlib` | Heap overflow en inflate() |
+| CVE-2023-44487 | `nginx` | HTTP/2 Rapid Reset (DDoS) |
+| CVE-2024-3094 | `xz-utils` | Backdoor en liblzma 5.6.0/5.6.1 |
+| CVE-2023-29491 | `ncurses` | Corrupción de memoria con terminfo malformado |
+| CVE-2023-24329 | `python` | Bypass de blocklist en urllib.parse |
+| CVE-2022-24765 | `git` | Directorio .git modificable por otro usuario |
+| CVE-2023-4863 | `libwebp` | Heap overflow en decodificación de imágenes WebP |
+
+Uso para la demo:
 
 ```bash
+python main.py --container <nombre> --nvd-feed sample_nvd.json
+python main.py --image nginx:latest --nvd-feed sample_nvd.json
+```
+
+### Descarga de feeds completos (producción)
+
+Los feeds NVD 1.1 (formato NIST antiguo) fueron **retirados en diciembre de 2023**. El script incluido usa la **NVD API 2.0**:
+
+```bash
+# Requiere: curl, jq
+bash scripts/download_nvd_feed.sh 2024 feeds/
+
+# Con API key (límite 50 req/30s en lugar de 5 req/30s)
+# Clave gratuita en: https://nvd.nist.gov/developers/request-an-api-key
+export NVD_API_KEY=<clave>
 bash scripts/download_nvd_feed.sh 2024 feeds/
 ```
 
-El script descarga y descomprime `nvdcve-1.1-2024.json.gz` en el directorio `feeds/`.
-
-**Usar el feed en la auditoría:**
+El script pagina automáticamente (2 000 CVEs por petición) y genera un único fichero JSON. Un año completo contiene ~30 000 CVEs y tarda 3-4 minutos sin clave o menos de 1 minuto con ella.
 
 ```bash
-python main.py --nvd-feed feeds/nvdcve-1.1-2024.json.gz
+python main.py --nvd-feed feeds/nvdcve-2.0-2024.json
 ```
-
-**Feed de muestra para pruebas:**
-
-El repositorio incluye `sample_nvd.json` con entradas de ejemplo para ejecutar la herramienta sin descargar el feed completo.
 
 ### Consideraciones sobre el matching
 
+- El matching es por nombre de paquete: `curl` en el nombre del componente coincide con `haxx:curl` en el CPE; `python3` coincide con `python:python`.
+- Las versiones en `sample_nvd.json` usan `*` (cualquier versión) para maximizar coincidencias en la demo.
 - El matching de versiones es flexible: `3.11` en el feed coincide con `3.11.5` en el paquete.
-- Los CVEs se deduplicaron para evitar duplicados en el reporte.
-- Un paquete sin versión detectable no se correlaciona.
-- Para una cobertura completa se recomienda usar feeds de los últimos 2-3 años.
+- Un paquete sin versión detectable se correlaciona igualmente si el CPE tiene versión `*`.
+- Para cobertura completa en producción se recomienda descargar feeds de los últimos 2-3 años.
 
 ---
 

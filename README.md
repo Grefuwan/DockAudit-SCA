@@ -32,37 +32,49 @@ Desarrollar un sistema de auditoría de seguridad para entornos Docker que permi
 ## Quick start
 
 ```bash
-cd /home/jgv/Documentos/TFM_-_Docker/DockAudit-SCA
+cd DockAudit-SCA
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-python main.py --target local --output html
+python main.py
 ```
 
-Ver: [PROJECT_STATE.md](PROJECT_STATE.md) para más comandos y opciones.
+Ver `docs/MANUAL.md` para la referencia completa de opciones y ejemplos.
 
 ## SBOM and NVD
 
-The tool now extracts installed package dependencies from Docker images using common package managers (dpkg, rpm, apk), performs binary content analysis, scores findings by risk level, and correlates them with NVD vulnerabilities.
+The tool extracts installed package dependencies from Docker images (dpkg, rpm, apk), generates a CycloneDX 1.4 SBOM, and correlates components against NVD CVE data using a local feed.
 
-Use a local NVD JSON/GZ feed to match package components to vulnerabilities:
+### Demo feed (included)
+
+`sample_nvd.json` is included in the repository and contains **15 real CVEs** covering the most common packages found in Docker images: `openssl`, `curl`, `nginx`, `python`, `sudo`, `openssh`, `zlib`, `xz-utils`, `ncurses`, `git`, `libwebp` and `log4j`.
 
 ```bash
-python main.py --target local --output html --sbom-dir reports/sbom --nvd-feed sample_nvd.json
+# Audit a specific container with CVE correlation
+python main.py --container <name> --nvd-feed sample_nvd.json
+
+# Audit a pulled image without a running container
+python main.py --image nginx:latest --nvd-feed sample_nvd.json
 ```
 
-A sample feed is available in `sample_nvd.json` for demo purposes.
+### Downloading a full NVD feed
 
-To download a real official NVD feed, run:
+The included script fetches data from the **NVD API 2.0** (the NVD 1.1 JSON feeds were retired by NIST in December 2023). Requires `curl` and `jq`.
 
 ```bash
-bash scripts/download_nvd_feed.sh 2024 feeds
+# Download CVEs for 2024 into feeds/ directory
+bash scripts/download_nvd_feed.sh 2024 feeds/
+
+# Optional: set an API key for higher rate limits (~50 req/30s vs 5 req/30s)
+# Free key at: https://nvd.nist.gov/developers/request-an-api-key
+export NVD_API_KEY=<your-key>
+bash scripts/download_nvd_feed.sh 2024 feeds/
 ```
 
-Then use the downloaded file:
+The script paginates automatically (2 000 CVEs per request) and saves a single JSON file:
 
 ```bash
-python main.py --target local --output html --sbom-dir reports/sbom --nvd-feed feeds/nvdcve-1.1-2024.json.gz
+python main.py --nvd-feed feeds/nvdcve-2.0-2024.json
 ```
 
 ## Resultados
@@ -70,15 +82,9 @@ python main.py --target local --output html --sbom-dir reports/sbom --nvd-feed f
 - HTML report: `reports/report.html`
 - JSON report: `reports/report.json`
 
-## Documentación adicional
+## Documentación
 
-- 📋 **Estado Actual del Proyecto:** [PROJECT_STATE.md](PROJECT_STATE.md) - Resumen completo, métricas, arquitectura
-- 🏗️ **Arquitectura:** [docs/architecture.md](docs/architecture.md)
-- 🔍 **NVD Methodology:** [docs/nvd.md](docs/nvd.md)
-- 🔐 **Compliance Mapping (CIS ↔ ISO 27001):** [docs/compliance_mapping.md](docs/compliance_mapping.md)
-- 📘 **Compliance Guide (Guía Práctica):** [COMPLIANCE_GUIDE.md](COMPLIANCE_GUIDE.md)
-- 📊 **CIS Coverage Analysis:** [CIS_COVERAGE_ANALYSIS.md](CIS_COVERAGE_ANALYSIS.md) - Análisis detallado de cobertura CIS Docker 1.6
-- ✅ **Table Verification:** [TABLE_VERIFICATION.md](TABLE_VERIFICATION.md) - Verificación CIS 1.6 ↔ ISO 27001:2022
+- **Manual completo:** [docs/MANUAL.md](docs/MANUAL.md) — arquitectura, módulos, CLI, NVD, compliance, tests y estructura de ficheros.
 
 ## Notas
 
