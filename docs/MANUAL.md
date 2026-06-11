@@ -1,6 +1,6 @@
 # DockAudit-SCA — Manual de la herramienta
 
-**Versión:** 0.1.0  
+**Versión:** 0.2.0  
 **Estándares:** CIS Docker Benchmark 1.6 · ISO/IEC 27001:2022  
 **Lenguaje:** Python 3.11+
 
@@ -131,13 +131,14 @@ python main.py --output json
 [*] Ejecutando auditoría del host...
 [*] Ejecutando auditoría de contenedores...
 [*] Ejecutando análisis de imágenes...
+[+] SBOM written to: reports/sbom/20260611-120000_-_SBOM_<target>.json
 [*] Evaluando compliance (CIS Docker Benchmark & ISO/IEC 27001)...
 [+] Compliance evaluation completed: 55 controls evaluated
 [*] Auditoría finalizada.
 [*] Generando informe...
-[+] HTML report written to: reports/report.html
-[+] Compliance JSON report written to: reports/<timestamp>_-_Compliance_Report_<target>.json
-[+] Compliance HTML report written to: reports/<timestamp>_-_Compliance_Report_<target>.html
+[+] HTML report written to: reports/20260611-120000_-_Audit_Report_<target>.html
+[+] Compliance JSON report written to: reports/20260611-120000_-_Compliance_Report_<target>.json
+[+] Compliance HTML report written to: reports/20260611-120000_-_Compliance_Report_<target>.html
 
 === CIS Docker Benchmark & ISO/IEC 27001 Compliance Summary ===
 Total Controls: 55
@@ -146,6 +147,22 @@ Non-Compliant: X
 Unknown: X
 Compliance Rate: X.X%
 ```
+
+### Nomenclatura de ficheros de salida
+
+Todos los ficheros generados siguen el patrón:
+
+```
+YYYYMMDD-HHMMSS_-_Tipo_objetivo.ext
+```
+
+| Invocación | Sufijo `<objetivo>` |
+|---|---|
+| Sin filtro | `All_Containers` |
+| `--container dvwa` | `dvwa` |
+| `--image nginx:latest` | `nginx_latest` |
+
+Esto garantiza que ejecuciones sucesivas no sobreescriban los resultados anteriores.
 
 ---
 
@@ -188,7 +205,7 @@ main.py
    └─ Para cada imagen (de contenedor si --container, por tag si --image, todas si sin filtro):
       · PackageExtractor: dpkg/rpm/apk → lista de paquetes
       · BinaryAnalyzer: binarios SUID/SGID, ficheros sensibles
-      · SBOMGenerator: SBOM CycloneDX 1.4 en reports/sbom/sbom.json
+      · SBOMGenerator: SBOM CycloneDX 1.4 en reports/sbom/<timestamp>_-_SBOM_<target>.json
       · NVDParser + VulnerabilityMatcher: correlación con CVEs (si --nvd-feed)
        ↓
 5. Compliance Evaluation
@@ -197,7 +214,7 @@ main.py
       · Mapeo a controles ISO 27001:2022 Anexo A
        ↓
 6. Report Generation
-   └─ reports/report.html (o .json) — reporte de auditoría general
+   └─ reports/<timestamp>_-_Audit_Report_<target>.html (o .json)
       reports/<timestamp>_-_Compliance_Report_<target>.html
       reports/<timestamp>_-_Compliance_Report_<target>.json
 ```
@@ -260,7 +277,7 @@ Coordina el análisis de imágenes. Admite tres modos:
 
 #### PackageExtractor (`package_extractor.py`)
 
-Ejecuta un contenedor efímero a partir de la imagen y lanza:
+Lanza un contenedor efímero mediante `subprocess` + `docker run --rm` y ejecuta:
 
 ```
 dpkg-query -W -f='${Package} ${Version}\n'   # Debian/Ubuntu
@@ -268,7 +285,9 @@ rpm -qa --queryformat '%{NAME} %{VERSION}...' # Red Hat/CentOS
 apk info -vv                                  # Alpine
 ```
 
-Timeout configurable (por defecto 10 s). Si no se detecta gestor de paquetes, registra un hallazgo `medium`.
+El timeout se aplica como tiempo real de ejecución del subproceso (por defecto 60 s), no como timeout HTTP. Si no se detecta gestor de paquetes, registra un hallazgo `medium`.
+
+Cada paquete extraído incluye el campo `image` con el tag de la imagen de origen, lo que permite trazar cada paquete hasta su imagen en el reporte.
 
 #### BinaryAnalyzer (`binary_analyzer.py`)
 
@@ -279,7 +298,7 @@ Detecta dentro de la imagen:
 
 #### SBOMGenerator (`sbom_generator.py`)
 
-Genera un SBOM en formato **CycloneDX 1.4** (JSON) en `reports/sbom/sbom.json`. Incluye:
+Genera un SBOM en formato **CycloneDX 1.4** (JSON) en `reports/sbom/<timestamp>_-_SBOM_<target>.json`. Incluye:
 
 - Metadatos del componente (nombre, versión, tipo, gestor de paquetes).
 - Hash SHA-256 del fichero cuando es posible.
@@ -289,7 +308,7 @@ Genera un SBOM en formato **CycloneDX 1.4** (JSON) en `reports/sbom/sbom.json`. 
 
 #### NVDParser (`sca/nvd_parser.py`)
 
-Carga un feed NVD en formato JSON o JSON.GZ (`nvdcve-1.1-YYYY.json`). Extrae para cada entrada:
+Carga un feed NVD en formato JSON o JSON.GZ generado por la **NVD API 2.0** (los feeds 1.1 fueron retirados por NIST en diciembre de 2023). Extrae para cada entrada:
 
 - ID del CVE.
 - Descripción en inglés.
@@ -311,6 +330,8 @@ Ver sección [6](#6-análisis-de-compliance-cis--iso-27001).
 ### 5.6 `reporting` — Generación de reportes
 
 Ver sección [8](#8-reportes-generados).
+
+Cada hallazgo incluye los campos `source` (nombre del contenedor, tag de imagen o nombre del paquete) y `source_type` (`host`, `container`, `image`, `package`). El reporte HTML los muestra como badges de color junto al título de cada hallazgo.
 
 ### 5.7 `orchestrator` — Coordinador
 
@@ -409,7 +430,7 @@ Imagen Docker
     │
     ├─ PackageExtractor → lista de paquetes (nombre + versión)
     │
-    ├─ SBOMGenerator → reports/sbom/sbom.json (CycloneDX 1.4)
+    ├─ SBOMGenerator → reports/sbom/<timestamp>_-_SBOM_<target>.json (CycloneDX 1.4)
     │
     └─ VulnerabilityMatcher
           │
@@ -465,7 +486,7 @@ export NVD_API_KEY=<clave>
 bash scripts/download_nvd_feed.sh 2024 feeds/
 ```
 
-El script pagina automáticamente (2 000 CVEs por petición) y genera un único fichero JSON. Un año completo contiene ~30 000 CVEs y tarda 3-4 minutos sin clave o menos de 1 minuto con ella.
+El script divide el año en ventanas de 90 días (límite máximo de la NVD API por petición), pagina automáticamente (2 000 CVEs por página) y genera un único fichero JSON. Un año completo contiene ~30 000 CVEs y tarda 3–4 minutos sin clave API o menos de 1 minuto con ella.
 
 ```bash
 python main.py --nvd-feed feeds/nvdcve-2.0-2024.json
@@ -483,20 +504,23 @@ python main.py --nvd-feed feeds/nvdcve-2.0-2024.json
 
 ## 8. Reportes generados
 
-La herramienta genera hasta cuatro ficheros de salida por ejecución.
+La herramienta genera hasta cinco ficheros de salida por ejecución. Todos siguen el patrón de nombres `YYYYMMDD-HHMMSS_-_Tipo_objetivo.ext` para evitar sobreescrituras.
 
 ### 8.1 Reporte de auditoría general
 
-**Ruta:** `reports/report.html` o `reports/report.json`
+**Ruta:** `reports/<timestamp>_-_Audit_Report_<target>.html` / `.json`
 
-Generado por `ReportGenerator` usando una plantilla Jinja2. Contiene:
+Generado por `ReportGenerator` usando una plantilla Jinja2. El reporte HTML incluye:
 
-- **Audit target**: objetivo de la auditoría (host, contenedor o imagen específica).
-- **Resumen**: número de hallazgos por sección (host, contenedores, imágenes, binarios, vulnerabilidades).
-- **Hallazgos**: listados por sección, filtrados por severidad mínima (`--severity`).
-- **Ruta al SBOM**: enlace al fichero CycloneDX generado.
+- **Sidebar de navegación** fija con enlaces a cada sección y contador de hallazgos.
+- **Tarjetas de resumen** (total, críticos, altos, medios, CVEs, paquetes).
+- **Hallazgos** agrupados por sección, filtrados por severidad mínima (`--severity`). Cada hallazgo es una card colapsable que muestra:
+  - Badge de severidad (`critical`, `high`, `medium`, `low`, `info`).
+  - **Badge de origen** (`source`): nombre del contenedor, tag de imagen, o nombre del paquete afectado, con color por tipo (`host` → morado, `container` → azul, `image` → verde, `package` → amarillo).
+  - Descripción y recomendación de remediación.
+- **Inventario de paquetes** con buscador en tiempo real y columnas: Paquete, Versión, Gestor, **Imagen** (tag de imagen donde fue detectado), CVEs. Las filas con CVEs se resaltan en rojo.
 
-Cada hallazgo incluye: `id`, `title`, `severity`, `description`, `recommendation`, `risk_score`.
+Cada hallazgo incluye: `id`, `title`, `severity`, `description`, `recommendation`, `risk_score`, `source`, `source_type`.
 
 ### 8.2 Reporte de compliance
 
@@ -541,9 +565,9 @@ El reporte JSON tiene esta estructura:
 
 ### 8.3 SBOM
 
-**Ruta:** `reports/sbom/sbom.json`
+**Ruta:** `reports/sbom/<timestamp>_-_SBOM_<target>.json`
 
-Formato **CycloneDX 1.4** JSON. Contiene los componentes software identificados en todas las imágenes analizadas. Compatible con herramientas como Dependency-Track, Grype o Trivy para análisis adicional.
+Formato **CycloneDX 1.4** JSON. Contiene los componentes software identificados en todas las imágenes analizadas, incluyendo el campo `image` con el tag de origen de cada paquete. Compatible con herramientas como Dependency-Track, Grype o Trivy para análisis adicional.
 
 ---
 
@@ -593,9 +617,9 @@ DockAudit-SCA/
 ├── main.py                          # Punto de entrada (CLI)
 ├── setup.py                         # Configuración del paquete Python
 ├── requirements.txt                 # Dependencias
-├── sample_nvd.json                  # Feed NVD de ejemplo para pruebas
+├── sample_nvd.json                  # Feed NVD de demo (15 CVEs reales)
 ├── Dockerfile.test                  # Imagen Docker para testing
-├── Dockerfile.vulnerable            # Imagen intenccionalmente vulnerable para demos
+├── Dockerfile.demo                  # Imagen con paquetes vulnerables y misconfigs para demo
 │
 ├── dockaudit/                       # Paquete principal (23 ficheros, ~4 200 líneas)
 │   ├── host_audit/
@@ -644,12 +668,12 @@ DockAudit-SCA/
 │   └── sample_report.html           # Reporte HTML de ejemplo
 │
 └── reports/                         # Salida de la herramienta (generado en ejecución)
-    ├── report.html
-    ├── report.json
+    ├── <timestamp>_-_Audit_Report_<target>.html
+    ├── <timestamp>_-_Audit_Report_<target>.json
     ├── <timestamp>_-_Compliance_Report_<target>.html
     ├── <timestamp>_-_Compliance_Report_<target>.json
     └── sbom/
-        └── sbom.json
+        └── <timestamp>_-_SBOM_<target>.json
 ```
 
 ---
@@ -737,4 +761,4 @@ La herramienta evalúa 55 de los 69 controles del CIS Docker Benchmark 1.6.
 
 ---
 
-*Generado para DockAudit-SCA v0.1.0 — TFM Seguridad en Contenedores Docker*
+*DockAudit-SCA v0.2.0 — TFM Seguridad en Contenedores Docker*

@@ -24,10 +24,13 @@ Desarrollar un sistema de auditoría de seguridad para entornos Docker que permi
 - Docker host configuration auditing
 - Container runtime security analysis
 - Docker image metadata inspection
-- Binary analysis of container image contents
+- Binary analysis of container image contents (SUID/SGID, sensitive files)
 - Package dependency extraction from Docker images (dpkg, rpm, apk)
-- Risk-based finding classification and SBOM/NVD correlation
-- HTML and JSON report generation
+- CVE correlation against NVD feeds with per-package linkage
+- SBOM generation in CycloneDX 1.4 format
+- CIS Docker Benchmark 1.6 compliance evaluation (55 controls) mapped to ISO/IEC 27001:2022
+- Interactive HTML report: sidebar navigation, collapsible findings, source-attribution badges, and package inventory table with CVE linkage
+- All output files use a consistent `YYYYMMDD-HHMMSS_-_Type_target.ext` naming convention
 
 ## Quick start
 
@@ -36,7 +39,7 @@ cd DockAudit-SCA
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-python main.py
+python3 main.py
 ```
 
 Ver `docs/MANUAL.md` para la referencia completa de opciones y ejemplos.
@@ -51,10 +54,19 @@ The tool extracts installed package dependencies from Docker images (dpkg, rpm, 
 
 ```bash
 # Audit a specific container with CVE correlation
-python main.py --container <name> --nvd-feed sample_nvd.json
+python3 main.py --container <name> --nvd-feed sample_nvd.json
 
 # Audit a pulled image without a running container
-python main.py --image nginx:latest --nvd-feed sample_nvd.json
+python3 main.py --image nginx:latest --nvd-feed sample_nvd.json
+```
+
+### Demo image (included)
+
+`Dockerfile.demo` builds an image with packages matching all 15 CVEs in `sample_nvd.json` plus deliberate security misconfigurations (SUID binaries, secrets in ENV, world-writable paths):
+
+```bash
+docker build -t dockaudit-demo -f Dockerfile.demo .
+python3 main.py --image dockaudit-demo --nvd-feed sample_nvd.json
 ```
 
 ### Downloading a full NVD feed
@@ -71,16 +83,23 @@ export NVD_API_KEY=<your-key>
 bash scripts/download_nvd_feed.sh 2024 feeds/
 ```
 
-The script paginates automatically (2 000 CVEs per request) and saves a single JSON file:
+The script splits the year into 90-day windows (NVD API limit), paginates automatically (2 000 CVEs per request), and saves a single JSON file:
 
 ```bash
-python main.py --nvd-feed feeds/nvdcve-2.0-2024.json
+python3 main.py --nvd-feed feeds/nvdcve-2.0-2024.json
 ```
 
 ## Resultados
 
-- HTML report: `reports/report.html`
-- JSON report: `reports/report.json`
+Todos los ficheros de salida siguen el patrón `YYYYMMDD-HHMMSS_-_Type_target.ext`:
+
+| Fichero | Descripción |
+|---|---|
+| `reports/<ts>_-_Audit_Report_<target>.html` | Reporte de auditoría general (HTML interactivo) |
+| `reports/<ts>_-_Audit_Report_<target>.json` | Mismo reporte en JSON |
+| `reports/<ts>_-_Compliance_Report_<target>.html` | Reporte CIS/ISO 27001 (HTML) |
+| `reports/<ts>_-_Compliance_Report_<target>.json` | Reporte CIS/ISO 27001 (JSON) |
+| `reports/sbom/<ts>_-_SBOM_<target>.json` | SBOM en formato CycloneDX 1.4 |
 
 ## Documentación
 
