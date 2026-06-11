@@ -17,7 +17,7 @@ class ImageAnalysis:
         self.container_filter = container_filter
         self.image_filter = image_filter
 
-    def run(self):
+    def run(self, sbom_filename=None):
         try:
             client = docker.from_env()
             
@@ -108,7 +108,9 @@ class ImageAnalysis:
                 "title": title,
                 "severity": severity,
                 "description": description,
-                "recommendation": recommendation
+                "recommendation": recommendation,
+                "source": image_name,
+                "source_type": "image"
             })
 
             img_env_vars = {}
@@ -139,35 +141,43 @@ class ImageAnalysis:
         package_components = []
         for image in images:
             if self.package_extractor:
-                # Use shorter timeout for package extraction to avoid hanging on large images
-                packages, status = self.package_extractor.extract(image, timeout=10)
+                image_tag = image.tags[0] if image.tags else image.id[:12]
+                packages, status = self.package_extractor.extract(image, timeout=60)
                 if packages:
+                    for pkg in packages:
+                        pkg["image"] = image_tag
                     findings.append({
                         "id": f"IMG-PKG-{image.id[:8]}",
-                        "title": f"Packages extracted for image {image.tags[0] if image.tags else image.id[:12]}",
+                        "title": f"Packages extracted for image {image_tag}",
                         "severity": "info",
                         "description": f"{len(packages)} packages were discovered and added to SBOM.",
-                        "recommendation": "Use the SBOM and vulnerability report to review installed packages."
+                        "recommendation": "Use the SBOM and vulnerability report to review installed packages.",
+                        "source": image_tag,
+                        "source_type": "image"
                     })
                     package_components.extend(packages)
                 elif status == "no package manager found":
                     findings.append({
                         "id": f"IMG-PKG-NOMGR-{image.id[:8]}",
-                        "title": f"No package manager detected for image {image.tags[0] if image.tags else image.id[:12]}",
+                        "title": f"No package manager detected for image {image_tag}",
                         "severity": "medium",
                         "description": "Unable to extract installed packages because the image has no supported package manager.",
-                        "recommendation": "Consider scanning the image filesystem or using a different scanning approach."
+                        "recommendation": "Consider scanning the image filesystem or using a different scanning approach.",
+                        "source": image_tag,
+                        "source_type": "image"
                     })
                 elif status != "ok":
                     findings.append({
                         "id": f"IMG-PKG-ERR-{image.id[:8]}",
-                        "title": f"Package extraction failed for image {image.tags[0] if image.tags else image.id[:12]}",
+                        "title": f"Package extraction failed for image {image_tag}",
                         "severity": "medium",
                         "description": status,
-                        "recommendation": "Verify Docker can run the image and that the image supports package inspection."
+                        "recommendation": "Verify Docker can run the image and that the image supports package inspection.",
+                        "source": image_tag,
+                        "source_type": "image"
                     })
 
-        sbom_path, sbom_components = self.sbom_generator.generate(images, package_components=package_components)
+        sbom_path, sbom_components = self.sbom_generator.generate(images, package_components=package_components, filename=sbom_filename)
         vulnerabilities = []
 
         if self.nvd_feed:
@@ -188,7 +198,8 @@ class ImageAnalysis:
             "vulnerabilities": vulnerabilities,
             "sbom_path": sbom_path,
             "binary_findings": binary_findings,
-            "images": images_metadata
+            "images": images_metadata,
+            "packages": package_components
         }
 
     def _extract_registry(self, image_name):

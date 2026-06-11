@@ -3,57 +3,545 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DockAudit-SCA Report</title>
+  <title>DockAudit-SCA — Audit Report</title>
   <style>
-    body { font-family: Arial, sans-serif; line-height: 1.5; margin: 2rem; }
-    h1, h2, h3 { color: #333; }
-    .summary { margin-bottom: 1.5rem; }
-    .finding { margin-bottom: 1rem; padding: 1rem; border: 1px solid #ccc; border-radius: 6px; }
-    .finding h3 { margin: 0 0 0.5rem; }
-    .severity-info { background: #eef7ff; }
-    .severity-medium { background: #fff7e6; }
-    .severity-high { background: #ffe6e6; }
-    .severity-critical { background: #ffdada; }
-    .recommendation { font-style: italic; color: #555; }
-    .footer { margin-top: 2rem; color: #555; font-size: 0.95rem; }
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1a202c;
+      --muted: #718096;
+      --sidebar-bg: #1e2a3b;
+      --sidebar-hover: #2d3f56;
+      --sidebar-active: #3b82f6;
+      --header-bg: #1e2a3b;
+      --c-critical: #e53e3e;
+      --c-high: #dd6b20;
+      --c-medium: #d69e2e;
+      --c-low: #38a169;
+      --c-info: #3182ce;
+      --c-host-bg: #e9d8fd; --c-host-text: #553c9a;
+      --c-container-bg: #bee3f8; --c-container-text: #2c5282;
+      --c-image-bg: #c6f6d5; --c-image-text: #22543d;
+      --c-package-bg: #fefcbf; --c-package-text: #744210;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      min-width: 220px;
+      background: var(--sidebar-bg);
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      overflow-y: auto;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-brand {
+      padding: 1.25rem 1rem 0.75rem;
+      border-bottom: 1px solid #2d3f56;
+    }
+    .sidebar-brand .logo {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #f7fafc;
+      letter-spacing: 0.04em;
+    }
+    .sidebar-brand .logo span { color: #60a5fa; }
+    .sidebar-brand .sub { font-size: 0.72rem; color: #94a3b8; margin-top: 0.1rem; }
+    .sidebar-target {
+      padding: 0.6rem 1rem;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      border-bottom: 1px solid #2d3f56;
+      word-break: break-all;
+    }
+    .sidebar-target strong { color: #e2e8f0; display: block; margin-bottom: 0.1rem; }
+    .sidebar-nav { padding: 0.75rem 0; flex: 1; }
+    .nav-section-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      padding: 0.6rem 1rem 0.2rem;
+    }
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.45rem 1rem;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.83rem;
+      border-left: 3px solid transparent;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+    .sidebar-nav a:hover { background: var(--sidebar-hover); color: #e2e8f0; }
+    .sidebar-nav a.active { background: #1e3a5f; color: #fff; border-left-color: var(--sidebar-active); }
+    .nav-count {
+      background: #334155;
+      color: #94a3b8;
+      font-size: 0.7rem;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 0.05rem 0.5rem;
+      min-width: 1.5em;
+      text-align: center;
+    }
+    .sidebar-nav a.active .nav-count { background: #2563eb; color: #fff; }
+
+    /* ── Main ── */
+    .main {
+      margin-left: 220px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .page-header {
+      background: var(--header-bg);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .page-header h1 { font-size: 1.05rem; font-weight: 700; color: #f7fafc; }
+    .page-header .header-meta { font-size: 0.78rem; color: #94a3b8; text-align: right; }
+
+    /* ── Content ── */
+    .content { padding: 1.75rem 2rem; }
+
+    /* ── Stat cards ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 0.85rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      border-left: 4px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .stat-value { font-size: 1.9rem; font-weight: 800; line-height: 1; }
+    .stat-label { font-size: 0.73rem; color: var(--muted); margin-top: 0.2rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    .sc-total   { border-left-color: #3182ce; }   .sc-total .stat-value { color: #3182ce; }
+    .sc-critical{ border-left-color: var(--c-critical); } .sc-critical .stat-value{ color: var(--c-critical); }
+    .sc-high    { border-left-color: var(--c-high); }     .sc-high .stat-value    { color: var(--c-high); }
+    .sc-medium  { border-left-color: var(--c-medium); }   .sc-medium .stat-value  { color: var(--c-medium); }
+    .sc-cve     { border-left-color: #e53e3e; }           .sc-cve .stat-value     { color: #e53e3e; }
+    .sc-pkg     { border-left-color: #38a169; }           .sc-pkg .stat-value     { color: #38a169; }
+
+    /* ── Report section ── */
+    .report-section { margin-bottom: 2.5rem; scroll-margin-top: 70px; }
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1rem;
+    }
+    .section-heading h2 { font-size: 1.05rem; font-weight: 700; }
+    .section-chip {
+      background: #e2e8f0;
+      color: #4a5568;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 12px;
+      padding: 0.1rem 0.6rem;
+    }
+    .empty-msg { color: var(--muted); font-size: 0.88rem; font-style: italic; }
+
+    /* ── Finding card ── */
+    .finding-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 0.6rem;
+      overflow: hidden;
+      transition: box-shadow 0.12s;
+    }
+    .finding-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+    .fc-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .fc-header:hover { background: #f8fafc; }
+    .finding-card.open > .fc-header { background: #f8fafc; }
+
+    .fc-body {
+      display: none;
+      padding: 0.1rem 1rem 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+    .finding-card.open > .fc-body { display: block; }
+
+    .sev-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.18rem 0.55rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .sev-pill.critical { background: #fed7d7; color: #c53030; }
+    .sev-pill.high     { background: #feebc8; color: #c05621; }
+    .sev-pill.medium   { background: #fefcbf; color: #975a16; }
+    .sev-pill.low      { background: #c6f6d5; color: #276749; }
+    .sev-pill.info     { background: #bee3f8; color: #2b6cb0; }
+
+    .src-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.18rem 0.55rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      flex-shrink: 0;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .src-pill.host      { background: var(--c-host-bg);      color: var(--c-host-text); }
+    .src-pill.container { background: var(--c-container-bg); color: var(--c-container-text); }
+    .src-pill.image     { background: var(--c-image-bg);     color: var(--c-image-text); }
+    .src-pill.package   { background: var(--c-package-bg);   color: var(--c-package-text); }
+
+    .src-icon { font-size: 0.75rem; }
+
+    .fc-title { font-size: 0.9rem; font-weight: 600; flex: 1; min-width: 0; }
+    .fc-id    { font-size: 0.72rem; color: var(--muted); flex-shrink: 0; font-family: monospace; }
+    .chevron  { font-size: 0.65rem; color: #a0aec0; flex-shrink: 0; transition: transform 0.15s; }
+    .finding-card.open .chevron { transform: rotate(180deg); }
+
+    .fc-desc {
+      font-size: 0.875rem;
+      color: #4a5568;
+      margin: 0.65rem 0 0.5rem;
+      line-height: 1.6;
+    }
+    .fc-rec {
+      font-size: 0.84rem;
+      background: #ebf8ff;
+      border-left: 3px solid var(--c-info);
+      padding: 0.45rem 0.7rem;
+      border-radius: 0 4px 4px 0;
+      color: #2d3748;
+    }
+    .fc-rec::before { content: "Recomendación: "; font-weight: 700; }
+
+    /* ── Package table ── */
+    .pkg-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .pkg-search {
+      padding: 0.45rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.86rem;
+      width: 280px;
+    }
+    .pkg-search:focus { outline: none; border-color: #3182ce; box-shadow: 0 0 0 2px #bee3f8; }
+    .pkg-visible { font-size: 0.8rem; color: var(--muted); }
+
+    .pkg-wrap { background: var(--surface); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .pkg-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    .pkg-table thead tr { background: #1e2a3b; }
+    .pkg-table th {
+      color: #e2e8f0;
+      text-align: left;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.73rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+    .pkg-table td { padding: 0.45rem 0.9rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .pkg-table tbody tr:last-child td { border-bottom: none; }
+    .pkg-table tbody tr:hover td { background: #f7fafc; }
+    .pkg-table tbody tr.has-cve td { background: #fff5f5; }
+    .pkg-table tbody tr.has-cve:hover td { background: #fed7d7; }
+
+    .pkg-name  { font-weight: 600; }
+    .pkg-ver   { font-family: monospace; font-size: 0.8rem; color: #4a5568; }
+    .pkg-mgr   { font-size: 0.75rem; background: #e2e8f0; padding: 0.1rem 0.4rem; border-radius: 3px; color: #4a5568; }
+    .pkg-img   { font-size: 0.78rem; color: var(--muted); font-family: monospace; white-space: nowrap; }
+    .cve-badge { display: inline-block; background: var(--c-critical); color: #fff; border-radius: 3px; padding: 0.1rem 0.45rem; font-size: 0.73rem; font-weight: 700; margin: 0.1rem 0.15rem 0.1rem 0; white-space: nowrap; }
+
+    /* ── Footer ── */
+    .report-footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      padding: 1.25rem 0;
+      border-top: 1px solid var(--border);
+      margin-top: 1rem;
+    }
+    .report-footer code { font-family: monospace; color: #4a5568; }
+
+    /* ── Severity bar (mini chart) ── */
+    .sev-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 0.9rem; gap: 2px; }
+    .sev-bar-seg { height: 100%; border-radius: 2px; }
+
+    @media (max-width: 760px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .content { padding: 1rem; }
+    }
   </style>
 </head>
 <body>
-  <h1>DockAudit-SCA Report</h1>
-  <div class="summary">
-    <p><strong>Audit target:</strong> {{ audit_target }}</p>
-    <p>Resumen de hallazgos:</p>
-    <ul>
-      <li>Host: {{ summary.host if summary.host is defined else 0 }}</li>
-      <li>Contenedores: {{ summary.containers if summary.containers is defined else 0 }}</li>
-      <li>Imágenes: {{ summary.images if summary.images is defined else 0 }}</li>
-      <li>Binarios: {{ summary.binaries if summary.binaries is defined else 0 }}</li>
-      <li>Vulnerabilidades: {{ summary.vulnerabilities if summary.vulnerabilities is defined else 0 }}</li>
-    </ul>
-  </div>
 
-  {% for section, items in results.items() %}
-  <section>
-    <h2>{{ section.capitalize() }}</h2>
-    {% if items %}
-      {% for item in items %}
-      <article class="finding severity-{{ item.severity }}">
-        <h3>{{ item.id }} — {{ item.title }}</h3>
-        <p><strong>Severidad:</strong> {{ item.severity }} (riesgo {{ item.risk_score }})</p>
-        <p>{{ item.description }}</p>
-        <p class="recommendation">Recomendación: {{ item.recommendation }}</p>
-      </article>
-      {% endfor %}
-    {% else %}
-      <p>No hay hallazgos que cumplan el nivel mínimo de severidad.</p>
-    {% endif %}
-  </section>
+{% set section_labels = {
+  'host': 'Auditoría del Host',
+  'containers': 'Contenedores',
+  'images': 'Imágenes Docker',
+  'binaries': 'Análisis de Binarios',
+  'vulnerabilities': 'Vulnerabilidades CVE'
+} %}
+{% set src_icons = {
+  'host': '🖥',
+  'container': '📦',
+  'image': '🗂',
+  'package': '🔩'
+} %}
+
+{% set ns = namespace(total=0, critical=0, high=0, medium=0, low=0, info_c=0) %}
+{% for section, items in results.items() %}
+  {% for item in items %}
+    {% set ns.total = ns.total + 1 %}
+    {% if item.severity == 'critical' %}{% set ns.critical = ns.critical + 1 %}{% endif %}
+    {% if item.severity == 'high'     %}{% set ns.high     = ns.high + 1 %}{% endif %}
+    {% if item.severity == 'medium'   %}{% set ns.medium   = ns.medium + 1 %}{% endif %}
+    {% if item.severity == 'low'      %}{% set ns.low      = ns.low + 1 %}{% endif %}
+    {% if item.severity == 'info'     %}{% set ns.info_c   = ns.info_c + 1 %}{% endif %}
   {% endfor %}
+{% endfor %}
 
-  {% if sbom_path %}
-  <div class="footer">
-    <p>SBOM generado en: {{ sbom_path }}</p>
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo">Dock<span>Audit</span>-SCA</div>
+    <div class="sub">Docker Security Audit</div>
   </div>
-  {% endif %}
+  <div class="sidebar-target">
+    <strong>Objetivo</strong>{{ audit_target }}
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Hallazgos</div>
+    {% for section, items in results.items() %}
+    <a href="#sec-{{ section }}">
+      {{ section_labels.get(section, section.capitalize()) }}
+      <span class="nav-count">{{ items | length }}</span>
+    </a>
+    {% endfor %}
+    {% if packages %}
+    <div class="nav-section-label" style="margin-top:0.5rem">Inventario</div>
+    <a href="#sec-packages">
+      Paquetes
+      <span class="nav-count">{{ packages | length }}</span>
+    </a>
+    {% endif %}
+  </nav>
+</aside>
+
+<!-- ── Main ── -->
+<div class="main">
+  <header class="page-header">
+    <h1>Audit Report</h1>
+    <div class="header-meta">
+      {{ ns.total }} hallazgos &nbsp;·&nbsp; {{ packages | length }} paquetes &nbsp;·&nbsp; {{ results.get('vulnerabilities', []) | length }} CVEs
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ── Stat cards ── -->
+    <div class="stats-grid">
+      <div class="stat-card sc-total">
+        <div class="stat-value">{{ ns.total }}</div>
+        <div class="stat-label">Hallazgos</div>
+      </div>
+      <div class="stat-card sc-critical">
+        <div class="stat-value">{{ ns.critical }}</div>
+        <div class="stat-label">Críticos</div>
+      </div>
+      <div class="stat-card sc-high">
+        <div class="stat-value">{{ ns.high }}</div>
+        <div class="stat-label">Altos</div>
+      </div>
+      <div class="stat-card sc-medium">
+        <div class="stat-value">{{ ns.medium }}</div>
+        <div class="stat-label">Medios</div>
+      </div>
+      <div class="stat-card sc-cve">
+        <div class="stat-value">{{ results.get('vulnerabilities', []) | length }}</div>
+        <div class="stat-label">CVEs</div>
+      </div>
+      <div class="stat-card sc-pkg">
+        <div class="stat-value">{{ packages | length }}</div>
+        <div class="stat-label">Paquetes</div>
+      </div>
+    </div>
+
+    <!-- ── Findings sections ── -->
+    {% for section, items in results.items() %}
+    <section class="report-section" id="sec-{{ section }}">
+      <div class="section-heading">
+        <h2>{{ section_labels.get(section, section.capitalize()) }}</h2>
+        <span class="section-chip">{{ items | length }}</span>
+      </div>
+
+      {% if items %}
+        {% for item in items %}
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill {{ item.severity }}">{{ item.severity }}</span>
+            {% if item.source is defined and item.source %}
+            <span class="src-pill {{ item.source_type | default('info') }}" title="{{ item.source }}">{{ item.source }}</span>
+            {% endif %}
+            <span class="fc-title">{{ item.title }}</span>
+            <span class="fc-id">{{ item.id }}</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            {% if item.description %}
+            <p class="fc-desc">{{ item.description }}</p>
+            {% endif %}
+            {% if item.recommendation %}
+            <div class="fc-rec">{{ item.recommendation }}</div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="empty-msg">No hay hallazgos para el nivel de severidad configurado.</p>
+      {% endif %}
+    </section>
+    {% endfor %}
+
+    <!-- ── Package inventory ── -->
+    {% if packages %}
+    <section class="report-section" id="sec-packages">
+      <div class="section-heading">
+        <h2>Inventario de paquetes</h2>
+        <span class="section-chip">{{ packages | length }}</span>
+      </div>
+      <div class="pkg-toolbar">
+        <input class="pkg-search" type="text" id="pkgSearch" placeholder="Filtrar por nombre, versión o imagen..." oninput="filterPackages()">
+        <span class="pkg-visible" id="pkgVisible">{{ packages | length }} visibles</span>
+      </div>
+      <div class="pkg-wrap">
+        <table class="pkg-table" id="pkgTable">
+          <thead>
+            <tr>
+              <th>Paquete</th>
+              <th>Versión</th>
+              <th>Gestor</th>
+              <th>Imagen</th>
+              <th>CVEs</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pkg in packages | sort(attribute='name') %}
+            {% set cves = vuln_by_package.get(pkg.name, []) %}
+            <tr class="{{ 'has-cve' if cves else '' }}">
+              <td><span class="pkg-name">{{ pkg.name }}</span></td>
+              <td><span class="pkg-ver">{{ pkg.version }}</span></td>
+              <td><span class="pkg-mgr">{{ pkg.package_manager }}</span></td>
+              <td><span class="pkg-img">{{ pkg.image | default('—') }}</span></td>
+              <td>
+                {% if cves %}
+                  {% for cve in cves %}<span class="cve-badge">{{ cve }}</span>{% endfor %}
+                {% else %}
+                  <span style="color:#a0aec0">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endif %}
+
+    {% if sbom_path %}
+    <div class="report-footer">
+      SBOM: <code>{{ sbom_path }}</code>
+    </div>
+    {% endif %}
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+function toggleCard(card) {
+  card.classList.toggle('open');
+}
+
+function filterPackages() {
+  var q = document.getElementById('pkgSearch').value.toLowerCase();
+  var rows = document.querySelectorAll('#pkgTable tbody tr');
+  var visible = 0;
+  rows.forEach(function(r) {
+    var show = r.textContent.toLowerCase().includes(q);
+    r.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('pkgVisible').textContent = visible + ' visibles';
+}
+
+(function() {
+  var links = Array.from(document.querySelectorAll('.sidebar-nav a'));
+  var ids   = links.map(function(a) { return a.getAttribute('href').slice(1); });
+  var secs  = ids.map(function(id) { return document.getElementById(id); });
+
+  function updateActive() {
+    var y = window.scrollY + 90;
+    var active = -1;
+    secs.forEach(function(s, i) { if (s && s.offsetTop <= y) active = i; });
+    links.forEach(function(l, i) { l.classList.toggle('active', i === active); });
+  }
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+})();
+</script>
 </body>
 </html>

@@ -116,13 +116,16 @@ class ContainerAudit:
 
             detailed_containers.append(container_metadata)
 
+            src = {"source": container.name, "source_type": "container"}
+
             if privileged:
                 self.findings.append({
                     "id": "CONT-002",
                     "title": f"Privileged container detected: {container.name}",
                     "severity": "high",
                     "description": "A container is running with privileged access.",
-                    "recommendation": "Avoid privileged containers unless strictly required."
+                    "recommendation": "Avoid privileged containers unless strictly required.",
+                    **src
                 })
 
             if network_mode == "host":
@@ -131,7 +134,8 @@ class ContainerAudit:
                     "title": f"Container using host network mode: {container.name}",
                     "severity": "high",
                     "description": "The container shares the host network stack.",
-                    "recommendation": "Use bridge networking to isolate container network traffic."
+                    "recommendation": "Use bridge networking to isolate container network traffic.",
+                    **src
                 })
 
             if any(cap == "ALL" for cap in cap_add):
@@ -140,7 +144,8 @@ class ContainerAudit:
                     "title": f"Container adds all Linux capabilities: {container.name}",
                     "severity": "high",
                     "description": "The container is configured to add all capabilities.",
-                    "recommendation": "Limit Linux capabilities to the minimum required."
+                    "recommendation": "Limit Linux capabilities to the minimum required.",
+                    **src
                 })
 
             if any(mount.get("Type") == "bind" for mount in mounts):
@@ -149,7 +154,8 @@ class ContainerAudit:
                     "title": f"Bind mount detected: {container.name}",
                     "severity": "medium",
                     "description": "The container uses a host bind mount, which can expose host files.",
-                    "recommendation": "Restrict bind mounts and avoid mounting sensitive host directories."
+                    "recommendation": "Restrict bind mounts and avoid mounting sensitive host directories.",
+                    **src
                 })
 
             if not any([privileged, network_mode == "host", any(cap == "ALL" for cap in cap_add), any(mount.get("Type") == "bind" for mount in mounts)]):
@@ -158,7 +164,8 @@ class ContainerAudit:
                     "title": f"Container appears to follow best practices: {container.name}",
                     "severity": "info",
                     "description": "No high-risk runtime configuration was detected for this container.",
-                    "recommendation": "Continue applying least-privilege runtime options."
+                    "recommendation": "Continue applying least-privilege runtime options.",
+                    **src
                 })
 
         return {

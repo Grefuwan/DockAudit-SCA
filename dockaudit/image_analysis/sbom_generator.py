@@ -50,7 +50,7 @@ class SBOMGenerator:
             ]
         }
 
-    def generate(self, images, package_components=None):
+    def generate(self, images, package_components=None, filename=None):
         os.makedirs(self.output_dir, exist_ok=True)
 
         components = [self._build_component(image) for image in images]
@@ -70,7 +70,7 @@ class SBOMGenerator:
             "components": components
         }
 
-        out_path = Path(self.output_dir) / "sbom.json"
+        out_path = Path(self.output_dir) / (filename or "sbom.json")
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(sbom, f, indent=2, ensure_ascii=False)
 

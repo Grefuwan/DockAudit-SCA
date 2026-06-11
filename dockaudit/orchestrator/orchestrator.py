@@ -39,6 +39,15 @@ class Orchestrator:
         self.report_generator = ReportGenerator(output_format, severity)
 
     def run_audit(self):
+        from datetime import datetime
+        self._audit_timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        if self.container_filter:
+            self._audit_suffix = self.container_filter.replace("/", "_")
+        elif self.image_filter:
+            self._audit_suffix = self.image_filter.replace("/", "_").replace(":", "_")
+        else:
+            self._audit_suffix = "All_Containers"
+
         print("[*] Iniciando auditoría Docker...")
         
         # Validate container filter if provided
@@ -109,11 +118,13 @@ class Orchestrator:
         results["container_audit"] = container_results if isinstance(container_results, dict) else {"findings": container_results}
 
         print("[*] Ejecutando análisis de imágenes...")
-        image_results = self.image_analysis.run()
+        sbom_filename = f"{self._audit_timestamp}_-_SBOM_{self._audit_suffix}.json"
+        image_results = self.image_analysis.run(sbom_filename=sbom_filename)
         results["images"] = image_results.get("findings", [])
         results["binaries"] = image_results.get("binary_findings", [])
         results["vulnerabilities"] = image_results.get("vulnerabilities", [])
         results["sbom_path"] = image_results.get("sbom_path")
+        results["packages"] = image_results.get("packages", [])
         results["image_analysis"] = image_results
 
         if self.compliance_enabled:
@@ -131,36 +142,29 @@ class Orchestrator:
 
     def generate_report(self, results):
         import os
-        from datetime import datetime
-        
+
         if not results:
             return
-        
-        print("[*] Generando informe...")
+
+        timestamp = getattr(self, "_audit_timestamp", None)
+        suffix = getattr(self, "_audit_suffix", "All_Containers")
+        if not timestamp:
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+
         if self.container_filter:
             audit_target = f"Container: {self.container_filter}"
         elif self.image_filter:
             audit_target = f"Image: {self.image_filter}"
         else:
             audit_target = "All Containers"
-        self.report_generator.generate(results, audit_target=audit_target)
-        
+
+        print("[*] Generando informe...")
+        audit_filename = f"{timestamp}_-_Audit_Report_{suffix}"
+        self.report_generator.generate(results, audit_target=audit_target, out_filename=audit_filename)
+
         if "compliance" in results and results["compliance"]:
             compliance_findings = results["compliance"]
-            if self.container_filter:
-                audit_target = f"Container: {self.container_filter}"
-            elif self.image_filter:
-                audit_target = f"Image: {self.image_filter}"
-            else:
-                audit_target = "All Containers"
-
-            timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-            if self.container_filter:
-                suffix = self.container_filter.replace("/", "_")
-            elif self.image_filter:
-                suffix = self.image_filter.replace("/", "_").replace(":", "_")
-            else:
-                suffix = "All_Containers"
             base_filename = f"{timestamp}_-_Compliance_Report_{suffix}"
             
             compliance_gen = ComplianceReportGenerator(compliance_findings, audit_target=audit_target)

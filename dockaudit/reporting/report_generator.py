@@ -31,12 +31,33 @@ class ReportGenerator:
         )
         return env.get_template("report_template.html")
 
-    def generate(self, results, audit_target="All Containers"):
+    def generate(self, results, audit_target="All Containers", out_filename=None):
         os.makedirs("reports", exist_ok=True)
 
+        # Packages are inventory data, not findings — extract before the findings filter
+        raw_packages = results.get("packages", [])
+        seen_pkgs = set()
+        packages = []
+        for pkg in raw_packages:
+            key = (pkg.get("name"), pkg.get("version"), pkg.get("package_manager"))
+            if key not in seen_pkgs:
+                seen_pkgs.add(key)
+                packages.append(pkg)
+
+        # Build CVE index: package_name -> [CVE-IDs]
+        vuln_by_package = {}
+        for vuln in results.get("vulnerabilities", []):
+            pkg_name = vuln.get("affected_package", "")
+            if pkg_name:
+                vuln_by_package.setdefault(pkg_name, []).append(vuln.get("id", ""))
+
+        # Findings sections — filter by severity and deduplicate
+        skip_keys = {"packages", "sbom_path", "image_analysis", "host_audit",
+                     "container_audit", "compliance", "compliance_summary",
+                     "compliance_iso_coverage"}
         filtered_results = {}
         for section, items in results.items():
-            if not isinstance(items, list):
+            if section in skip_keys or not isinstance(items, list):
                 continue
             filtered = self._filter(items)
             deduped = []
@@ -50,10 +71,11 @@ class ReportGenerator:
                 deduped.append(item)
             filtered_results[section] = deduped
 
+        base = out_filename or "report"
         if self.output_format == "json":
-            out_path = os.path.join("reports", "report.json")
+            out_path = os.path.join("reports", f"{base}.json")
             with open(out_path, "w", encoding="utf-8") as f:
-                json.dump(filtered_results, f, indent=2, ensure_ascii=False)
+                json.dump({**filtered_results, "packages": packages}, f, indent=2, ensure_ascii=False)
             print(f"[+] JSON report written to: {out_path}")
             return out_path
 
@@ -64,11 +86,13 @@ class ReportGenerator:
                 section: len(items)
                 for section, items in filtered_results.items()
             },
+            packages=packages,
+            vuln_by_package=vuln_by_package,
             sbom_path=results.get("sbom_path"),
             audit_target=audit_target
         )
 
-        out_path = os.path.join("reports", "report.html")
+        out_path = os.path.join("reports", f"{base}.html")
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(report_html)
 

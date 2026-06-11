@@ -23,6 +23,10 @@ class HostAudit:
         self.check_docker_socket_permissions()
         self.check_daemon_configuration()
 
+        for finding in self.findings:
+            finding.setdefault("source", "Docker Host")
+            finding.setdefault("source_type", "host")
+
         return {
             "findings": self.findings,
             "daemon_config": self.daemon_config,

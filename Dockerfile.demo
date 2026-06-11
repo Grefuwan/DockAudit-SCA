@@ -1,0 +1,56 @@
+# Demo image for DockAudit-SCA.
+# Deliberately includes packages matching the CVEs in sample_nvd.json
+# and security misconfigurations to produce rich audit output.
+#
+# Build:  docker build -t dockaudit-demo -f Dockerfile.demo .
+# Run:    docker run -d --name dockaudit-demo-container dockaudit-demo
+# Audit:  python3 main.py --container dockaudit-demo-container --nvd-feed sample_nvd.json
+
+FROM debian:bullseye-slim
+
+# Packages that match CVEs in sample_nvd.json (all version wildcards, so any version matches):
+#   openssl      -> CVE-2022-0778, CVE-2022-1292, CVE-2023-0286
+#   curl         -> CVE-2022-32207, CVE-2022-42915
+#   sudo         -> CVE-2021-3156
+#   openssh      -> CVE-2023-38408
+#   git          -> CVE-2022-24765
+#   python3      -> CVE-2023-24329
+#   libwebp6     -> CVE-2023-4863
+#   nginx        -> CVE-2023-44487
+#   xz-utils     -> CVE-2024-3094
+#   ncurses-bin  -> CVE-2023-29491
+#   zlib1g       -> CVE-2022-37434
+#   liblog4j2    -> CVE-2021-44228
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl \
+    curl \
+    sudo \
+    openssh-client \
+    git \
+    python3 \
+    libwebp6 \
+    nginx \
+    xz-utils \
+    ncurses-bin \
+    zlib1g \
+    liblog4j2-java \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Security misconfiguration 1: sensitive data in environment variables (CIS 5.25)
+ENV DB_PASSWORD=supersecret123 \
+    API_KEY=abc123token \
+    SECRET_TOKEN=do_not_expose_this
+
+# Security misconfiguration 2: SUID binary (detected by binary analyzer)
+RUN chmod u+s /usr/bin/sudo
+
+# Security misconfiguration 3: world-writable directory
+RUN mkdir -p /opt/app && chmod 777 /opt/app
+
+# Security misconfiguration 4: running as root (CIS 4.1)
+USER root
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

@@ -350,8 +350,8 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
 <div class="container">
 <header><span class="header-icon">&#128274;</span><div><h1>DockAudit-SCA</h1><p>CIS Docker Benchmark &amp; ISO/IEC 27001 Compliance Report</p></div></header>
 <div class="metadata-bar">
-  <span><strong>Target:</strong> Container: juice</span>
-  <span><strong>Generated:</strong> 2026-06-04 21:21:16</span>
+  <span><strong>Target:</strong> All Containers</span>
+  <span><strong>Generated:</strong> 2026-06-11 20:01:43</span>
   <span><strong>Standard:</strong> CIS Docker Benchmark 1.6 &mdash; ISO/IEC 27001:2022</span>
 </div>
 
@@ -361,11 +361,11 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
     <div class="stat-label">Total Controls</div>
   </div>
   <div class="stat-card card-compliant">
-    <div class="stat-number">24</div>
+    <div class="stat-number">15</div>
     <div class="stat-label">Compliant</div>
   </div>
   <div class="stat-card card-noncompliant">
-    <div class="stat-number">27</div>
+    <div class="stat-number">36</div>
     <div class="stat-label">Non-Compliant</div>
   </div>
   <div class="stat-card card-unknown">
@@ -373,7 +373,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
     <div class="stat-label">Unknown</div>
   </div>
   <div class="stat-card card-rate">
-    <div class="stat-number">43.6%</div>
+    <div class="stat-number">27.3%</div>
     <div class="stat-label">Compliance Rate</div>
   </div>
   <div class="chart-card">
@@ -606,7 +606,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">No dangerous network protocol modules detected</span></span><span class="kv-item"><span class="kv-key">modules_checked:</span> <span class="kv-val">114</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">No dangerous network protocol modules detected</span></span><span class="kv-item"><span class="kv-key">modules_checked:</span> <span class="kv-val">118</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -885,7 +885,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">version:</span> <span class="kv-val">29.5.2</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">version:</span> <span class="kv-val">29.5.3</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -988,13 +988,13 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
   </td>
 </tr>
 
-<tr class="finding-row" data-status="compliant" data-severity="critical" data-category="Container Runtime">
+<tr class="finding-row" data-status="non_compliant" data-severity="critical" data-category="Container Runtime">
   <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
   <td><strong>CIS-3.1</strong></td>
   <td><span style="font-size:0.82em;color:var(--text-muted)">Container Runtime</span></td>
   <td>No usar --privileged con contenedores en producción</td>
   <td><span class="badge badge-critical">CRITICAL</span></td>
-  <td><span class="badge badge-compliant">Compliant</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
 </tr>
 <tr class="detail-row" style="display:none">
   <td colspan="6">
@@ -1009,7 +1009,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">No privileged containers detected</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Privileged containers detected</span></span><span class="kv-item"><span class="kv-key">count:</span> <span class="kv-val">1</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;hopeful_lalande&#x27;]</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1019,13 +1019,13 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
   </td>
 </tr>
 
-<tr class="finding-row" data-status="compliant" data-severity="high" data-category="Container Runtime">
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Container Runtime">
   <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
   <td><strong>CIS-3.2</strong></td>
   <td><span style="font-size:0.82em;color:var(--text-muted)">Container Runtime</span></td>
   <td>No usar --user=root</td>
   <td><span class="badge badge-high">HIGH</span></td>
-  <td><span class="badge badge-compliant">Compliant</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
 </tr>
 <tr class="detail-row" style="display:none">
   <td colspan="6">
@@ -1040,7 +1040,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">All containers running as non-root</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers running as root</span></span><span class="kv-item"><span class="kv-key">count:</span> <span class="kv-val">8</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;musing_franklin&#x27;, &#x27;vigilant_tharp&#x27;, &#x27;awesome_rubin&#x27;, &#x27;nifty_proskuriakova&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1071,7 +1071,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without capability restrictions</span></span><span class="kv-item"><span class="kv-key">count:</span> <span class="kv-val">1</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;juice&#x27;]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Use --cap-drop=ALL and add only necessary capabilities</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without capability restrictions</span></span><span class="kv-item"><span class="kv-key">count:</span> <span class="kv-val">10</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;musing_franklin&#x27;, &#x27;vigilant_tharp&#x27;, &#x27;awesome_rubin&#x27;, &#x27;nifty_proskuriakova&#x27;, &#x27;secure-nginx&#x27;, &#x27;juice&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Use --cap-drop=ALL and add only necessary capabilities</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1195,7 +1195,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">custom_images:</span> <span class="kv-val">1</span></span><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Custom images detected</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">custom_images:</span> <span class="kv-val">4</span></span><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Custom images detected</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1267,13 +1267,13 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
   </td>
 </tr>
 
-<tr class="finding-row" data-status="compliant" data-severity="high" data-category="Image Security">
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Image Security">
   <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
   <td><strong>CIS-4.4</strong></td>
   <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
   <td>Usar imágenes base de confianza</td>
   <td><span class="badge badge-high">HIGH</span></td>
-  <td><span class="badge badge-compliant">Compliant</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
 </tr>
 <tr class="detail-row" style="display:none">
   <td colspan="6">
@@ -1288,7 +1288,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">All images from trusted registries</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Images from untrusted or unknown registries</span></span><span class="kv-item"><span class="kv-key">count:</span> <span class="kv-val">1</span></span><span class="kv-item"><span class="kv-key">images:</span> <span class="kv-val">[&#x27;cgr.dev/chainguard/nginx:latest&#x27;]</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1360,13 +1360,13 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
   </td>
 </tr>
 
-<tr class="finding-row" data-status="compliant" data-severity="critical" data-category="Image Security">
+<tr class="finding-row" data-status="non_compliant" data-severity="critical" data-category="Image Security">
   <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
   <td><strong>CIS-4.5</strong></td>
   <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
   <td>No incluir secretos en las imágenes</td>
   <td><span class="badge badge-critical">CRITICAL</span></td>
-  <td><span class="badge badge-compliant">Compliant</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
 </tr>
 <tr class="detail-row" style="display:none">
   <td colspan="6">
@@ -1381,7 +1381,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">No sensitive environment variables detected in images</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Sensitive environment variables detected in image configuration</span></span><span class="kv-item"><span class="kv-key">findings:</span> <span class="kv-val">[{&#x27;image&#x27;: &#x27;dockaudit-demo:latest&#x27;, &#x27;env_var&#x27;: &#x27;DB_PASSWORD&#x27;}, {&#x27;image&#x27;: &#x27;dockaudit-demo:latest&#x27;, &#x27;env_var&#x27;: &#x27;API_KEY&#x27;}, {&#x27;image&#x27;: &#x27;dockaudit-demo:latest&#x27;, &#x27;env_var&#x27;: &#x27;SECRET_TOKEN&#x27;}]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Remove secrets from image ENV instructions and use runtime secrets</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1391,13 +1391,13 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
   </td>
 </tr>
 
-<tr class="finding-row" data-status="compliant" data-severity="high" data-category="Image Security">
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Image Security">
   <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
   <td><strong>CIS-4.6</strong></td>
   <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
   <td>No usar credenciales en variables de entorno dentro de imagen</td>
   <td><span class="badge badge-high">HIGH</span></td>
-  <td><span class="badge badge-compliant">Compliant</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
 </tr>
 <tr class="detail-row" style="display:none">
   <td colspan="6">
@@ -1412,7 +1412,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">No credential-bearing ENV instructions detected in images</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Image ENV instructions contain credentials or sensitive keys</span></span><span class="kv-item"><span class="kv-key">findings:</span> <span class="kv-val">[{&#x27;image&#x27;: &#x27;dockaudit-demo:latest&#x27;, &#x27;env_var&#x27;: &#x27;DB_PASSWORD&#x27;}, {&#x27;image&#x27;: &#x27;dockaudit-demo:latest&#x27;, &#x27;env_var&#x27;: &#x27;API_KEY&#x27;}, {&#x27;image&#x27;: &#x27;dockaudit-demo:latest&#x27;, &#x27;env_var&#x27;: &#x27;SECRET_TOKEN&#x27;}]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Use build args or runtime secrets instead of ENV for credentials</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1443,7 +1443,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Images without HEALTHCHECK instructions</span></span><span class="kv-item"><span class="kv-key">images:</span> <span class="kv-val">[&#x27;bkimminich/juice-shop:latest&#x27;]</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Images without HEALTHCHECK instructions</span></span><span class="kv-item"><span class="kv-key">images:</span> <span class="kv-val">[&#x27;dockaudit-demo:latest&#x27;, &#x27;nginx:latest&#x27;, &#x27;cgr.dev/chainguard/nginx:latest&#x27;, &#x27;vuln-demo-image:latest&#x27;, &#x27;test-audit-image:latest&#x27;, &#x27;bkimminich/juice-shop:latest&#x27;, &#x27;hello-world:latest&#x27;, &#x27;vulnerables/web-dvwa:latest&#x27;]</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1474,7 +1474,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without PID limits (fork bomb risk)</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;juice&#x27;]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Use --pids-limit to restrict the number of processes</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without PID limits (fork bomb risk)</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;musing_franklin&#x27;, &#x27;vigilant_tharp&#x27;, &#x27;awesome_rubin&#x27;, &#x27;nifty_proskuriakova&#x27;, &#x27;secure-nginx&#x27;, &#x27;juice&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Use --pids-limit to restrict the number of processes</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1536,7 +1536,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without a custom Seccomp profile</span></span><span class="kv-item"><span class="kv-key">count:</span> <span class="kv-val">1</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;juice&#x27;]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Use --security-opt seccomp=/path/to/profile.json</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without a custom Seccomp profile</span></span><span class="kv-item"><span class="kv-key">count:</span> <span class="kv-val">10</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;musing_franklin&#x27;, &#x27;vigilant_tharp&#x27;, &#x27;awesome_rubin&#x27;, &#x27;nifty_proskuriakova&#x27;, &#x27;secure-nginx&#x27;, &#x27;juice&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Use --security-opt seccomp=/path/to/profile.json</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1691,7 +1691,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without CPU limits</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;juice&#x27;]</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without CPU limits</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;musing_franklin&#x27;, &#x27;vigilant_tharp&#x27;, &#x27;awesome_rubin&#x27;, &#x27;nifty_proskuriakova&#x27;, &#x27;secure-nginx&#x27;, &#x27;juice&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1722,7 +1722,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without memory limits</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;juice&#x27;]</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without memory limits</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;musing_franklin&#x27;, &#x27;vigilant_tharp&#x27;, &#x27;awesome_rubin&#x27;, &#x27;nifty_proskuriakova&#x27;, &#x27;secure-nginx&#x27;, &#x27;juice&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1753,7 +1753,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers with writable root filesystem</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;juice&#x27;]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Use --read-only for containers that do not require write access</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers with writable root filesystem</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;musing_franklin&#x27;, &#x27;vigilant_tharp&#x27;, &#x27;awesome_rubin&#x27;, &#x27;nifty_proskuriakova&#x27;, &#x27;secure-nginx&#x27;, &#x27;juice&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Use --read-only for containers that do not require write access</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1763,13 +1763,13 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
   </td>
 </tr>
 
-<tr class="finding-row" data-status="compliant" data-severity="medium" data-category="Runtime">
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Runtime">
   <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
   <td><strong>CIS-5.10</strong></td>
   <td><span style="font-size:0.82em;color:var(--text-muted)">Runtime</span></td>
   <td>Verificar permisos de volúmenes montados</td>
   <td><span class="badge badge-medium">MEDIUM</span></td>
-  <td><span class="badge badge-compliant">Compliant</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
 </tr>
 <tr class="detail-row" style="display:none">
   <td colspan="6">
@@ -1784,7 +1784,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Volume permissions appear secure or no bind mounts detected</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Writable bind mounts detected</span></span><span class="kv-item"><span class="kv-key">volumes:</span> <span class="kv-val">[{&#x27;container&#x27;: &#x27;hopeful_lalande&#x27;, &#x27;mount&#x27;: &#x27;/mnt&#x27;}]</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1815,7 +1815,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without CPU shares configured</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;juice&#x27;]</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without CPU shares configured</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;musing_franklin&#x27;, &#x27;vigilant_tharp&#x27;, &#x27;awesome_rubin&#x27;, &#x27;nifty_proskuriakova&#x27;, &#x27;secure-nginx&#x27;, &#x27;juice&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1825,13 +1825,13 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
   </td>
 </tr>
 
-<tr class="finding-row" data-status="compliant" data-severity="high" data-category="Image Security">
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Image Security">
   <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
   <td><strong>CIS-6.2</strong></td>
   <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
   <td>Escanear imágenes en busca de vulnerabilidades</td>
   <td><span class="badge badge-high">HIGH</span></td>
-  <td><span class="badge badge-compliant">Compliant</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
 </tr>
 <tr class="detail-row" style="display:none">
   <td colspan="6">
@@ -1846,7 +1846,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Vulnerability scan completed with no critical/high findings</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">High severity vulnerabilities found</span></span><span class="kv-item"><span class="kv-key">high:</span> <span class="kv-val">66</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1856,13 +1856,13 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
   </td>
 </tr>
 
-<tr class="finding-row" data-status="compliant" data-severity="high" data-category="Image Security">
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Image Security">
   <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
   <td><strong>CIS-6.3</strong></td>
   <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
   <td>Permitir solo imágenes confiables</td>
   <td><span class="badge badge-high">HIGH</span></td>
-  <td><span class="badge badge-compliant">Compliant</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
 </tr>
 <tr class="detail-row" style="display:none">
   <td colspan="6">
@@ -1877,7 +1877,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">All images are from trusted registries</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Images pulled from untrusted registries</span></span><span class="kv-item"><span class="kv-key">registries:</span> <span class="kv-val">[&#x27;cgr.dev&#x27;]</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -1887,13 +1887,13 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
   </td>
 </tr>
 
-<tr class="finding-row" data-status="compliant" data-severity="high" data-category="Registry Security">
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Registry Security">
   <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
   <td><strong>CIS-6.1</strong></td>
   <td><span style="font-size:0.82em;color:var(--text-muted)">Registry Security</span></td>
   <td>Restringir registries usados</td>
   <td><span class="badge badge-high">HIGH</span></td>
-  <td><span class="badge badge-compliant">Compliant</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
 </tr>
 <tr class="detail-row" style="display:none">
   <td colspan="6">
@@ -1908,7 +1908,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       </div>
       <div class="detail-block">
         <h4>Technical Evidence</h4>
-        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">All scanned images are from allowed registries</span></span></div>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Images from non-allowlisted registries</span></span><span class="kv-item"><span class="kv-key">registries:</span> <span class="kv-val">[&#x27;cgr.dev&#x27;]</span></span></div>
       </div>
       <div class="detail-block">
         <h4>ISO/IEC 27001 Controls</h4>
@@ -2164,9 +2164,9 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
   <div class="cat-row">
     <div class="cat-label">Container Runtime</div>
     <div class="cat-bar-wrap">
-      <div class="cat-bar-fill" style="width:71.4%"><span>71%</span></div>
+      <div class="cat-bar-fill" style="width:42.9%"><span>43%</span></div>
     </div>
-    <div class="cat-stats">5/7 compliant</div>
+    <div class="cat-stats">3/7 compliant</div>
   </div>
   <div class="cat-row">
     <div class="cat-label">Hardening</div>
@@ -2185,9 +2185,9 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
   <div class="cat-row">
     <div class="cat-label">Image Security</div>
     <div class="cat-bar-wrap">
-      <div class="cat-bar-fill" style="width:80.0%"><span>80%</span></div>
+      <div class="cat-bar-fill" style="width:30.0%"><span>30%</span></div>
     </div>
-    <div class="cat-stats">8/10 compliant</div>
+    <div class="cat-stats">3/10 compliant</div>
   </div>
   <div class="cat-row">
     <div class="cat-label">Logging</div>
@@ -2213,9 +2213,9 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
   <div class="cat-row">
     <div class="cat-label">Registry Security</div>
     <div class="cat-bar-wrap">
-      <div class="cat-bar-fill" style="width:66.7%"><span>67%</span></div>
+      <div class="cat-bar-fill" style="width:33.3%"><span>33%</span></div>
     </div>
-    <div class="cat-stats">2/3 compliant</div>
+    <div class="cat-stats">1/3 compliant</div>
   </div>
   <div class="cat-row">
     <div class="cat-label">Resource Controls</div>
@@ -2227,9 +2227,9 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
   <div class="cat-row">
     <div class="cat-label">Runtime</div>
     <div class="cat-bar-wrap">
-      <div class="cat-bar-fill" style="width:66.7%"><span>67%</span></div>
+      <div class="cat-bar-fill" style="width:33.3%"><span>33%</span></div>
     </div>
-    <div class="cat-stats">2/3 compliant</div>
+    <div class="cat-stats">1/3 compliant</div>
   </div>
   <div class="cat-row">
     <div class="cat-label">Secrets Management</div>
@@ -2266,10 +2266,10 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       <strong>Access Control</strong><br>
       <span style="font-size:0.8em;color:var(--text-muted)">A.8.1, A.8.2</span>
     </td>
-    <td style="text-align:center"><span class="badge badge-compliant">9</span></td>
-    <td style="text-align:center"><span class="badge badge-non-compliant">4</span></td>
+    <td style="text-align:center"><span class="badge badge-compliant">5</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">8</span></td>
     <td style="text-align:center"><span class="badge badge-unknown">2</span></td>
-    <td style="text-align:center;font-weight:600">60.0%</td>
+    <td style="text-align:center;font-weight:600">33.3%</td>
   </tr>
   <tr>
     <td>
@@ -2286,20 +2286,20 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       <strong>Container Security</strong><br>
       <span style="font-size:0.8em;color:var(--text-muted)">A.8.22</span>
     </td>
-    <td style="text-align:center"><span class="badge badge-compliant">4</span></td>
-    <td style="text-align:center"><span class="badge badge-non-compliant">6</span></td>
+    <td style="text-align:center"><span class="badge badge-compliant">3</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">7</span></td>
     <td style="text-align:center"><span class="badge badge-unknown">1</span></td>
-    <td style="text-align:center;font-weight:600">36.4%</td>
+    <td style="text-align:center;font-weight:600">27.3%</td>
   </tr>
   <tr>
     <td>
       <strong>Hardening</strong><br>
       <span style="font-size:0.8em;color:var(--text-muted)">A.8.19</span>
     </td>
-    <td style="text-align:center"><span class="badge badge-compliant">7</span></td>
-    <td style="text-align:center"><span class="badge badge-non-compliant">2</span></td>
+    <td style="text-align:center"><span class="badge badge-compliant">3</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">6</span></td>
     <td style="text-align:center"><span class="badge badge-unknown">2</span></td>
-    <td style="text-align:center;font-weight:600">63.6%</td>
+    <td style="text-align:center;font-weight:600">27.3%</td>
   </tr>
   <tr>
     <td>
@@ -2346,30 +2346,30 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
       <strong>Privileged Access</strong><br>
       <span style="font-size:0.8em;color:var(--text-muted)">A.8.3</span>
     </td>
-    <td style="text-align:center"><span class="badge badge-compliant">4</span></td>
-    <td style="text-align:center"><span class="badge badge-non-compliant">8</span></td>
+    <td style="text-align:center"><span class="badge badge-compliant">2</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">10</span></td>
     <td style="text-align:center"><span class="badge badge-unknown">2</span></td>
-    <td style="text-align:center;font-weight:600">28.6%</td>
+    <td style="text-align:center;font-weight:600">14.3%</td>
   </tr>
   <tr>
     <td>
       <strong>Secure Development</strong><br>
       <span style="font-size:0.8em;color:var(--text-muted)">A.8.25</span>
     </td>
-    <td style="text-align:center"><span class="badge badge-compliant">2</span></td>
-    <td style="text-align:center"><span class="badge badge-non-compliant">1</span></td>
+    <td style="text-align:center"><span class="badge badge-compliant">1</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">2</span></td>
     <td style="text-align:center"><span class="badge badge-unknown">0</span></td>
-    <td style="text-align:center;font-weight:600">66.7%</td>
+    <td style="text-align:center;font-weight:600">33.3%</td>
   </tr>
   <tr>
     <td>
       <strong>Vulnerability Management</strong><br>
       <span style="font-size:0.8em;color:var(--text-muted)">A.8.8</span>
     </td>
-    <td style="text-align:center"><span class="badge badge-compliant">4</span></td>
-    <td style="text-align:center"><span class="badge badge-non-compliant">0</span></td>
+    <td style="text-align:center"><span class="badge badge-compliant">2</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">2</span></td>
     <td style="text-align:center"><span class="badge badge-unknown">0</span></td>
-    <td style="text-align:center;font-weight:600">100.0%</td>
+    <td style="text-align:center;font-weight:600">50.0%</td>
   </tr>
       </tbody>
     </table>
@@ -2390,7 +2390,7 @@ footer { text-align: center; padding: 22px; color: var(--text-muted); font-size:
         data: {
             labels: ['Compliant', 'Non-Compliant', 'Unknown'],
             datasets: [{
-                data: [24, 27, 4],
+                data: [15, 36, 4],
                 backgroundColor: ['#c6f6d5', '#fed7d7', '#feebc8'],
                 borderColor: ['#276749', '#c53030', '#c05621'],
                 borderWidth: 2,

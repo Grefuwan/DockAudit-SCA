@@ -38,6 +38,9 @@ class BinaryAnalyzer:
         return findings
 
     def _analyze_single_image(self, image):
+        image_tag = image.tags[0] if image.tags else image.id[:12]
+        src = {"source": image_tag, "source_type": "image"}
+
         try:
             tar_stream = image.save()
             fileobj = GeneratorFile(iter(tar_stream))
@@ -49,7 +52,8 @@ class BinaryAnalyzer:
                     "title": "Binary analysis failed",
                     "severity": "medium",
                     "description": str(exc),
-                    "recommendation": "Verify that the Docker image is accessible and the Docker daemon is running."
+                    "recommendation": "Verify that the Docker image is accessible and the Docker daemon is running.",
+                    **src
                 }
             ]
 
@@ -88,7 +92,8 @@ class BinaryAnalyzer:
                 "title": "SUID binaries detected",
                 "severity": "critical",
                 "description": f"{len(suid_files)} SUID file(s) found: {', '.join(suid_files[:3])}",
-                "recommendation": "Avoid SUID binaries in container images and use least privilege for executables."
+                "recommendation": "Avoid SUID binaries in container images and use least privilege for executables.",
+                **src
             })
 
         if sgid_files:
@@ -97,7 +102,8 @@ class BinaryAnalyzer:
                 "title": "SGID binaries detected",
                 "severity": "high",
                 "description": f"{len(sgid_files)} SGID file(s) found: {', '.join(sgid_files[:3])}",
-                "recommendation": "Remove unnecessary SGID bits from container binaries."
+                "recommendation": "Remove unnecessary SGID bits from container binaries.",
+                **src
             })
 
         if suspicious_files:
@@ -106,7 +112,8 @@ class BinaryAnalyzer:
                 "title": "Sensitive configuration files present",
                 "severity": "high",
                 "description": f"Potentially sensitive file paths detected: {', '.join(suspicious_files[:3])}",
-                "recommendation": "Review and remove embedded sensitive files from the container image."
+                "recommendation": "Review and remove embedded sensitive files from the container image.",
+                **src
             })
 
         if library_files:
@@ -115,7 +122,8 @@ class BinaryAnalyzer:
                 "title": "Shared libraries detected",
                 "severity": "medium",
                 "description": f"{len(library_files)} shared library files discovered in the image.",
-                "recommendation": "Inspect shared libraries for known vulnerabilities and remove unused libraries."
+                "recommendation": "Inspect shared libraries for known vulnerabilities and remove unused libraries.",
+                **src
             })
 
         if exec_count:
@@ -124,7 +132,8 @@ class BinaryAnalyzer:
                 "title": "Executable artifacts found",
                 "severity": "info",
                 "description": f"{exec_count} executable files were located in the image filesystem.",
-                "recommendation": "Verify that only required binaries are included in the container image."
+                "recommendation": "Verify that only required binaries are included in the container image.",
+                **src
             })
 
         return findings

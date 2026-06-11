@@ -1,6 +1,8 @@
 #!/bin/bash
 # Downloads NVD CVE data for a given year using the NVD API 2.0.
 # The NVD 1.1 JSON feeds (nvd.nist.gov/feeds) were retired in December 2023.
+# The API enforces a 120-day maximum date range per request; this script
+# splits the year into 90-day windows and paginates within each window.
 #
 # Usage:
 #   ./download_nvd_feed.sh [year] [output_dir]
@@ -20,12 +22,10 @@ API_KEY="${NVD_API_KEY:-}"
 
 BASE_URL="https://services.nvd.nist.gov/rest/json/cves/2.0"
 RESULTS_PER_PAGE=2000
-START_DATE="${YEAR}-01-01T00:00:00.000"
-END_DATE="${YEAR}-12-31T23:59:59.999"
+WINDOW_DAYS=90
 OUTPUT_FILE="$OUTPUT_DIR/nvdcve-2.0-${YEAR}.json"
 
-# Dependency checks
-for cmd in curl jq; do
+for cmd in curl jq date; do
     if ! command -v "$cmd" >/dev/null 2>&1; then
         echo "ERROR: '$cmd' is required."
         echo "  Install: sudo apt install $cmd   /   brew install $cmd"
@@ -35,7 +35,6 @@ done
 
 mkdir -p "$OUTPUT_DIR"
 
-# Rate limits: 5 req/30s without key, 50 req/30s with key
 if [ -n "$API_KEY" ]; then
     DELAY=1
     echo "[*] NVD API key detected — using higher rate limit"
@@ -45,57 +44,88 @@ else
     echo "    Request a free key at: https://nvd.nist.gov/developers/request-an-api-key"
 fi
 
-echo "[*] Fetching NVD CVEs for year $YEAR..."
+echo "[*] Fetching NVD CVEs for year $YEAR (${WINDOW_DAYS}-day windows)..."
 
-CURL_ARGS=(-s -f --retry 3 --retry-delay 5)
+CURL_ARGS=(-s -f --connect-timeout 15 --max-time 120 --retry 3 --retry-delay 10)
 [ -n "$API_KEY" ] && CURL_ARGS+=(-H "apiKey: $API_KEY")
 
-ALL_VULNS='[]'
-START_INDEX=0
-TOTAL_RESULTS=-1
-PAGE=1
+# Accumulate individual CVE objects as JSONL (one JSON object per line)
+TMPDIR_WORK=$(mktemp -d)
+VULNS_JSONL="$TMPDIR_WORK/vulns.jsonl"
+trap 'rm -rf "$TMPDIR_WORK"' EXIT
+
+WINDOW_START="${YEAR}-01-01"
+YEAR_END="${YEAR}-12-31"
 
 while true; do
-    URL="${BASE_URL}?pubStartDate=${START_DATE}&pubEndDate=${END_DATE}&resultsPerPage=${RESULTS_PER_PAGE}&startIndex=${START_INDEX}"
+    WINDOW_END=$(date -d "${WINDOW_START} + ${WINDOW_DAYS} days - 1 day" +%Y-%m-%d 2>/dev/null \
+                 || date -v+${WINDOW_DAYS}d -v-1d -j -f "%Y-%m-%d" "$WINDOW_START" +%Y-%m-%d)
 
-    echo -n "[*] Page $PAGE (offset $START_INDEX)... "
+    [[ "$WINDOW_END" > "$YEAR_END" ]] && WINDOW_END="$YEAR_END"
 
-    RESPONSE=$(curl "${CURL_ARGS[@]}" "$URL")
+    START_DATE="${WINDOW_START}T00:00:00.000"
+    END_DATE="${WINDOW_END}T23:59:59.999"
 
-    if [ "$TOTAL_RESULTS" -eq -1 ]; then
-        TOTAL_RESULTS=$(echo "$RESPONSE" | jq '.totalResults')
-        echo -n "total: $TOTAL_RESULTS CVEs — "
-    fi
+    echo "[*] Window: $WINDOW_START → $WINDOW_END"
 
-    PAGE_VULNS=$(echo "$RESPONSE" | jq '.vulnerabilities // []')
-    PAGE_COUNT=$(echo "$PAGE_VULNS" | jq 'length')
-    echo "$PAGE_COUNT entries"
+    START_INDEX=0
+    WINDOW_TOTAL=-1
+    PAGE=1
 
-    [ "$PAGE_COUNT" -eq 0 ] && break
+    while true; do
+        URL="${BASE_URL}?pubStartDate=${START_DATE}&pubEndDate=${END_DATE}&resultsPerPage=${RESULTS_PER_PAGE}&startIndex=${START_INDEX}"
 
-    ALL_VULNS=$(jq -n --argjson a "$ALL_VULNS" --argjson b "$PAGE_VULNS" '$a + $b')
-    START_INDEX=$((START_INDEX + PAGE_COUNT))
+        echo -n "    Page $PAGE (offset $START_INDEX)... "
 
-    [ "$START_INDEX" -ge "$TOTAL_RESULTS" ] && break
+        RESPONSE=$(curl "${CURL_ARGS[@]}" "$URL")
 
-    PAGE=$((PAGE + 1))
+        if [ "$WINDOW_TOTAL" -eq -1 ]; then
+            WINDOW_TOTAL=$(echo "$RESPONSE" | jq '.totalResults')
+            echo -n "total: $WINDOW_TOTAL CVEs — "
+        fi
+
+        PAGE_COUNT=$(echo "$RESPONSE" | jq '.vulnerabilities | length')
+        echo "$PAGE_COUNT entries"
+
+        [ "$PAGE_COUNT" -eq 0 ] && break
+
+        # Append each CVE object as a single line to the JSONL file
+        echo "$RESPONSE" | jq -c '.vulnerabilities[]' >> "$VULNS_JSONL"
+
+        START_INDEX=$((START_INDEX + PAGE_COUNT))
+        [ "$START_INDEX" -ge "$WINDOW_TOTAL" ] && break
+
+        PAGE=$((PAGE + 1))
+        sleep "$DELAY"
+    done
+
+    [[ "$WINDOW_END" == "$YEAR_END" ]] && break
+
+    WINDOW_START=$(date -d "${WINDOW_END} + 1 day" +%Y-%m-%d 2>/dev/null \
+                   || date -v+1d -j -f "%Y-%m-%d" "$WINDOW_END" +%Y-%m-%d)
     sleep "$DELAY"
 done
 
+echo ""
+echo "[*] Assembling output file..."
+
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%S.000")
-jq -n \
-    --argjson vulns "$ALL_VULNS" \
+
+# Read the JSONL file and wrap into the final NVD JSON envelope
+jq -Rs '
+    split("\n") |
+    map(select(length > 0) | fromjson)
+' "$VULNS_JSONL" | jq \
     --arg ts "$TIMESTAMP" \
     '{
         "format": "NVD_CVE",
         "version": "2.0",
         "timestamp": $ts,
-        "totalResults": ($vulns | length),
-        "vulnerabilities": $vulns
+        "totalResults": length,
+        "vulnerabilities": .
     }' > "$OUTPUT_FILE"
 
 FINAL_COUNT=$(jq '.vulnerabilities | length' "$OUTPUT_FILE")
-echo ""
 echo "[+] $FINAL_COUNT CVEs written to: $OUTPUT_FILE"
 echo ""
 echo "    python3 main.py --nvd-feed $OUTPUT_FILE"
