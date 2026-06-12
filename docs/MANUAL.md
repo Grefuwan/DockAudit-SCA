@@ -92,6 +92,8 @@ python main.py [opciones]
 | `--nvd-feed` | _(vacío)_ | Ruta al feed NVD local (`.json` o `.json.gz`) |
 | `--container` | _(ninguno)_ | Nombre del contenedor a auditar (filtra contenedor e imagen asociada) |
 | `--image` | _(ninguno)_ | Nombre/tag de una imagen a auditar sin necesidad de contenedor desplegado |
+| `--skip-host` | _(desactivado)_ | Omite la auditoría del host (útil para auditar solo imágenes/contenedores) |
+| `--fail-on` | `none` | Sale con código 2 si hay hallazgos de severidad igual o superior (`low`, `medium`, `high`, `critical`). Pensado para integración en pipelines CI/CD |
 
 ### Ejemplos de uso
 
@@ -116,7 +118,21 @@ python main.py --severity high
 
 # Auditoría con salida en JSON
 python main.py --output json
+
+# Solo imágenes/contenedores, sin auditoría del host
+python main.py --skip-host --image nginx:latest
+
+# Integración CI/CD: falla (exit 2) si hay hallazgos high o critical
+python main.py --nvd-feed feeds/nvdcve-2.0-2024.json --fail-on high
 ```
+
+### Códigos de salida
+
+| Código | Significado |
+|---|---|
+| `0` | Auditoría completada sin superar el umbral de `--fail-on` |
+| `1` | Error de ejecución (daemon inaccesible, filtro inválido...) |
+| `2` | Hallazgos con severidad >= umbral de `--fail-on` |
 
 ### Comportamiento de los filtros `--container` e `--image`
 
@@ -277,15 +293,17 @@ Coordina el análisis de imágenes. Admite tres modos:
 
 #### PackageExtractor (`package_extractor.py`)
 
-Lanza un contenedor efímero mediante `subprocess` + `docker run --rm` y ejecuta:
+La estrategia principal es **análisis estático**: exporta el sistema de ficheros de la imagen con `docker save` y parsea directamente las bases de datos de paquetes, **sin ejecutar nunca código de la imagen auditada**:
 
 ```
-dpkg-query -W -f='${Package} ${Version}\n'   # Debian/Ubuntu
-rpm -qa --queryformat '%{NAME} %{VERSION}...' # Red Hat/CentOS
-apk info -vv                                  # Alpine
+var/lib/dpkg/status        # Debian/Ubuntu
+var/lib/dpkg/status.d/     # imágenes distroless de Google
+lib/apk/db/installed       # Alpine
 ```
 
-El timeout se aplica como tiempo real de ejecución del subproceso (por defecto 60 s), no como timeout HTTP. Si no se detecta gestor de paquetes, registra un hallazgo `medium`.
+Las bases de datos RPM son binarias (BerkeleyDB/SQLite con cabeceras propias de rpm), por lo que las imágenes Red Hat/CentOS recurren a un **fallback endurecido**: un `docker run` efímero con `--network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=64 --memory=256m`, que mitiga el riesgo de ejecutar código de una imagen potencialmente maliciosa.
+
+El timeout se aplica como tiempo real de ejecución del subproceso (por defecto 120 s). Si no se detecta gestor de paquetes (imagen distroless sin metadatos, scratch...), registra un hallazgo `medium`.
 
 Cada paquete extraído incluye el campo `image` con el tag de la imagen de origen, lo que permite trazar cada paquete hasta su imagen en el reporte.
 
@@ -301,8 +319,9 @@ Detecta dentro de la imagen:
 Genera un SBOM en formato **CycloneDX 1.4** (JSON) en `reports/sbom/<timestamp>_-_SBOM_<target>.json`. Incluye:
 
 - Metadatos del componente (nombre, versión, tipo, gestor de paquetes).
-- Hash SHA-256 del fichero cuando es posible.
-- Lista de `components` compatible con herramientas de terceros (Dependency-Track, etc.).
+- Identificador **purl** (Package URL) por componente: `pkg:deb/bash@5.1-2`, `pkg:apk/musl@1.2.4-r2`, `pkg:docker/nginx@<id>`. El purl es el identificador estándar que permite a otros escáneres (Grype, Dependency-Track) consumir el SBOM directamente.
+- Propiedad `source-image` con el tag de la imagen de origen de cada paquete.
+- Lista de `components` compatible con herramientas de terceros.
 
 ### 5.4 `sca` — Software Composition Analysis
 
@@ -312,16 +331,17 @@ Carga un feed NVD en formato JSON o JSON.GZ generado por la **NVD API 2.0** (los
 
 - ID del CVE.
 - Descripción en inglés.
-- Lista de `cpeMatch` (CPE 2.3) afectados.
+- Lista de `cpeMatch` (CPE 2.3) afectados, **incluyendo los rangos de versión** (`versionStartIncluding`, `versionEndExcluding`, etc.).
+- Métricas **CVSS** (v3.1 con preferencia, luego v3.0 y v2): puntuación base, severidad y vector.
 
 #### VulnerabilityMatcher (`sca/vulnerability_matcher.py`)
 
 Correlaciona los paquetes extraídos con las entradas NVD usando:
 
-1. Nombre del paquete contra el componente CPE.
-2. Versión extraída contra la versión del CPE (matching flexible: `3.11` coincide con `3.11.5`).
+1. **Nombre**: el producto del CPE debe coincidir exactamente con el nombre del paquete o con una de sus variantes normalizadas (`libssl3` genera los candidatos `ssl3`, `libssl`, `ssl`; se eliminan sufijos como `-dev` o `-common`). Se evita deliberadamente el matching por subcadena, que producía falsos positivos (producto `sh` coincidía con el paquete `bash`).
+2. **Versión**: comparación numérica de tuplas de versión, con soporte de épocas Debian (`1:1.34+dfsg-1.2` → `1.34`) y de los **rangos de versión** del feed: un CPE con `versionEndExcluding: 1.2.14` coincide con `zlib 1.2.13` pero no con `1.2.14`.
 
-Devuelve lista de CVEs con ID, descripción y paquete afectado.
+Cada CVE devuelto incluye `cvss_score`, `cvss_severity` y `cvss_vector`; la severidad del hallazgo se toma directamente del CVSS del NVD (si el CVE aún no tiene análisis CVSS, se asigna `medium`).
 
 ### 5.5 `compliance` — Evaluación de compliance
 
@@ -580,7 +600,7 @@ source .venv/bin/activate
 python -m pytest -q
 ```
 
-Resultado esperado: `33 passed`
+Resultado esperado: `51 passed`
 
 ### Ejecutar un módulo concreto
 
@@ -592,18 +612,18 @@ python -m pytest tests/test_compliance.py -v
 
 | Fichero | Tests | Qué cubre |
 |---|---|---|
-| `test_basic.py` | 2 | Imports y estructura básica |
-| `test_binary_analyzer.py` | 2 | Detección SUID/SGID |
+| `test_binary_analyzer.py` | 1 | Detección SUID/SGID y ficheros sensibles |
+| `test_compliance.py` | 15 | Evaluación de todos los grupos de controles |
 | `test_container_audit.py` | 3 | Modo privilegiado, no containers, error Docker |
-| `test_host_audit.py` | 1 | Auditoría de host |
-| `test_image_analysis_nvd.py` | 1 | SBOM + correlación NVD |
-| `test_nvd_parser.py` | 3 | Parseo de feeds NVD |
-| `test_package_extractor.py` | 3 | dpkg, no gestor, error de contenedor |
-| `test_report_generator.py` | 2 | HTML y JSON |
-| `test_sbom_generator.py` | 1 | Generación CycloneDX |
-| `test_vulnerability_matcher.py` | 1 | Correlación paquetes/CVEs |
-| `test_compliance.py` | 14 | Evaluación de todos los grupos de controles |
-| **Total** | **33** | |
+| `test_fail_on.py` | 4 | Umbral `--fail-on` y códigos de salida |
+| `test_host_audit.py` | 3 | Auditoría de host |
+| `test_image_analysis_nvd.py` | 1 | SBOM + correlación NVD (integración) |
+| `test_nvd_parser.py` | 4 | Feeds v1/v2, gzip, CVSS y rangos de versión |
+| `test_package_extractor.py` | 7 | Parseo estático dpkg/apk, fallback runtime, flujo extract() |
+| `test_report_generator.py` | 3 | HTML, JSON y deduplicación de CVEs |
+| `test_sbom_generator.py` | 2 | Generación CycloneDX y purl |
+| `test_vulnerability_matcher.py` | 8 | Rangos de versión, épocas, CVSS, falsos positivos, atribución |
+| **Total** | **51** | |
 
 Todos los tests usan objetos `Dummy` (stubs) que simulan el cliente Docker, evitando dependencias de un daemon real en ejecución durante las pruebas.
 
@@ -618,7 +638,6 @@ DockAudit-SCA/
 ├── setup.py                         # Configuración del paquete Python
 ├── requirements.txt                 # Dependencias
 ├── sample_nvd.json                  # Feed NVD de demo (15 CVEs reales)
-├── Dockerfile.test                  # Imagen Docker para testing
 ├── Dockerfile.demo                  # Imagen con paquetes vulnerables y misconfigs para demo
 │
 ├── dockaudit/                       # Paquete principal (23 ficheros, ~4 200 líneas)
@@ -646,8 +665,7 @@ DockAudit-SCA/
 │   │   └── orchestrator.py
 │   └── utils/
 │
-├── tests/                           # Suite de tests (11 ficheros, 33 tests)
-│   ├── test_basic.py
+├── tests/                           # Suite de tests (11 ficheros, 51 tests)
 │   ├── test_binary_analyzer.py
 │   ├── test_container_audit.py
 │   ├── test_host_audit.py
@@ -661,6 +679,7 @@ DockAudit-SCA/
 │
 ├── scripts/
 │   ├── run_real_integration.sh      # Auditoría completa automatizada
+│   ├── compare_with_trivy.py        # Comparativa de CVEs frente a Trivy
 │   └── download_nvd_feed.sh         # Descarga feeds NVD oficiales
 │
 ├── examples/

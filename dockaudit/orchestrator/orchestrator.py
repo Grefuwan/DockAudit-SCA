@@ -17,7 +17,8 @@ class Orchestrator:
         nvd_feed=None,
         compliance_enabled=True,
         container_filter=None,
-        image_filter=None
+        image_filter=None,
+        skip_host=False
     ):
         self.target = target
         self.output_format = output_format
@@ -25,6 +26,7 @@ class Orchestrator:
         self.compliance_enabled = compliance_enabled
         self.container_filter = container_filter
         self.image_filter = image_filter
+        self.skip_host = skip_host
 
         self.host_audit = HostAudit(target)
         self.container_audit = ContainerAudit(target, container_filter=container_filter)
@@ -107,10 +109,13 @@ class Orchestrator:
             "image_analysis": {}
         }
 
-        print("[*] Ejecutando auditoría del host...")
-        host_results = self.host_audit.run()
-        results["host"] = host_results.get("findings", host_results if isinstance(host_results, list) else [])
-        results["host_audit"] = host_results if isinstance(host_results, dict) else {"findings": host_results}
+        if self.skip_host:
+            print("[*] Auditoría del host omitida (--skip-host).")
+        else:
+            print("[*] Ejecutando auditoría del host...")
+            host_results = self.host_audit.run()
+            results["host"] = host_results.get("findings", host_results if isinstance(host_results, list) else [])
+            results["host_audit"] = host_results if isinstance(host_results, dict) else {"findings": host_results}
 
         print("[*] Ejecutando auditoría de contenedores...")
         container_results = self.container_audit.run()

@@ -5,8 +5,9 @@ from dockaudit.image_analysis.binary_analyzer import BinaryAnalyzer
 
 
 class DummyImage:
-    def __init__(self, image_id, tar_bytes):
+    def __init__(self, image_id, tar_bytes, tags=None):
         self.id = image_id
+        self.tags = tags or []
         self._tar_bytes = tar_bytes
 
     def save(self):

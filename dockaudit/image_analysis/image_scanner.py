@@ -142,7 +142,7 @@ class ImageAnalysis:
         for image in images:
             if self.package_extractor:
                 image_tag = image.tags[0] if image.tags else image.id[:12]
-                packages, status = self.package_extractor.extract(image, timeout=60)
+                packages, status = self.package_extractor.extract(image, timeout=120)
                 if packages:
                     for pkg in packages:
                         pkg["image"] = image_tag

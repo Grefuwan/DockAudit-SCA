@@ -220,6 +220,33 @@
     .sev-pill.low      { background: #c6f6d5; color: #276749; }
     .sev-pill.info     { background: #bee3f8; color: #2b6cb0; }
 
+    .cvss-pill {
+      display: inline-block;
+      border-radius: 3px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+      background: #2d3748; color: #fff;
+    }
+    .cvss-pill.critical { background: #c53030; }
+    .cvss-pill.high     { background: #c05621; }
+    .cvss-pill.medium   { background: #975a16; }
+    .cvss-pill.low      { background: #276749; }
+
+    .fc-meta {
+      font-size: 0.8rem;
+      color: #4a5568;
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 0.45rem 0.7rem;
+      margin-top: 0.6rem;
+      font-family: "SF Mono", "Fira Code", Consolas, monospace;
+      word-break: break-all;
+    }
+
     .src-pill {
       display: inline-flex;
       align-items: center;
@@ -434,6 +461,9 @@
         <div class="finding-card" onclick="toggleCard(this)">
           <div class="fc-header">
             <span class="sev-pill {{ item.severity }}">{{ item.severity }}</span>
+            {% if item.cvss_score is defined and item.cvss_score is not none %}
+            <span class="cvss-pill {{ item.severity }}" title="{{ item.cvss_vector | default('') }}">CVSS {{ '%.1f' | format(item.cvss_score) }}</span>
+            {% endif %}
             {% if item.source is defined and item.source %}
             <span class="src-pill {{ item.source_type | default('info') }}" title="{{ item.source }}">{{ item.source }}</span>
             {% endif %}
@@ -447,6 +477,11 @@
             {% endif %}
             {% if item.recommendation %}
             <div class="fc-rec">{{ item.recommendation }}</div>
+            {% endif %}
+            {% if item.affected_package is defined and item.affected_package %}
+            <div class="fc-meta">
+              Paquete afectado: {{ item.affected_package }} {{ item.package_version | default('') }}{% if item.cvss_vector is defined and item.cvss_vector %} &nbsp;·&nbsp; {{ item.cvss_vector }}{% endif %}
+            </div>
             {% endif %}
           </div>
         </div>

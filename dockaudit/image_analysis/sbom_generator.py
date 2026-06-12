@@ -5,6 +5,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
+PURL_TYPE_BY_MANAGER = {
+    "dpkg": "deb",
+    "apk": "apk",
+    "rpm": "rpm"
+}
+
+
 class SBOMGenerator:
     def __init__(self, output_dir="reports/sbom", output_format="json"):
         self.output_dir = output_dir
@@ -17,11 +24,13 @@ class SBOMGenerator:
     def _build_component(self, image):
         tags = image.tags or ["<none>:<none>"]
         primary_tag = tags[0]
+        image_name = primary_tag.split(":")[0].replace("/", "%2F")
         component = {
             "type": "container",
             "bom-ref": self._bom_reference(primary_tag, image.id[:12]),
             "name": primary_tag,
             "version": image.id[:12],
+            "purl": f"pkg:docker/{image_name}@{image.id[:12]}",
             "description": image.attrs.get("Comment", ""),
             "properties": []
         }
@@ -39,16 +48,22 @@ class SBOMGenerator:
         name = package.get("name")
         version = package.get("version")
         manager = package.get("package_manager", "unknown")
-        return {
+        purl_type = PURL_TYPE_BY_MANAGER.get(manager, "generic")
+        purl = f"pkg:{purl_type}/{name}@{version}"
+        component = {
             "type": "library",
-            "bom-ref": f"pkg:{manager}/{name}@{version}",
+            "bom-ref": purl,
             "name": name,
             "version": version,
+            "purl": purl,
             "description": f"Package installed from {manager}.",
             "properties": [
                 {"name": "package-manager", "value": manager}
             ]
         }
+        if package.get("image"):
+            component["properties"].append({"name": "source-image", "value": package["image"]})
+        return component
 
     def generate(self, images, package_components=None, filename=None):
         os.makedirs(self.output_dir, exist_ok=True)
@@ -64,7 +79,7 @@ class SBOMGenerator:
             "metadata": {
                 "timestamp": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
                 "tools": [
-                    {"vendor": "DockAudit-SCA", "name": "SBOM Generator", "version": "0.1"}
+                    {"vendor": "DockAudit-SCA", "name": "SBOM Generator", "version": "0.2"}
                 ]
             },
             "components": components

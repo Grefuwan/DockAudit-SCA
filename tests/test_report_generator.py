@@ -37,7 +37,7 @@ def test_generate_html_output(tmp_path, monkeypatch):
     assert os.path.exists(out_path)
     with open(out_path, encoding="utf-8") as f:
         html = f.read()
-    assert "DockAudit-SCA Report" in html
+    assert "Audit Report" in html
     assert "HOST-001" in html
 
 

@@ -74,7 +74,37 @@ def parse_arguments():
         help="Nombre/tag de la imagen Docker a auditar (p.ej. 'nginx:latest'). No requiere contenedor desplegado."
     )
 
+    parser.add_argument(
+        "--skip-host",
+        action="store_true",
+        help="Omite la auditoría del host Docker (útil para auditar solo imágenes/contenedores)"
+    )
+
+    parser.add_argument(
+        "--fail-on",
+        type=str,
+        choices=["none", "low", "medium", "high", "critical"],
+        default="none",
+        help="Sale con código 2 si hay hallazgos con severidad igual o superior a la indicada (integración CI/CD)"
+    )
+
     return parser.parse_args()
+
+
+SEVERITY_ORDER = {"info": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
+
+
+def max_severity_reached(results, threshold):
+    """Returns True if any finding meets or exceeds the severity threshold."""
+    if threshold == "none":
+        return False
+    threshold_level = SEVERITY_ORDER[threshold]
+    for section in ("host", "containers", "images", "binaries", "vulnerabilities"):
+        for finding in results.get(section, []) or []:
+            severity = str(finding.get("severity", "info")).lower()
+            if SEVERITY_ORDER.get(severity, 0) >= threshold_level:
+                return True
+    return False
 
 
 def main():
@@ -91,17 +121,22 @@ def main():
         sbom_dir=args.sbom_dir,
         nvd_feed=args.nvd_feed or None,
         container_filter=args.container,
-        image_filter=args.image
+        image_filter=args.image,
+        skip_host=args.skip_host
     )
 
     results = orchestrator.run_audit()
-    
+
     # Only generate report if audit was successful
     if results and results.get("host") is not None:
         orchestrator.generate_report(results)
     else:
         print("[*] Auditoría abortada. No se generaron reportes.")
         sys.exit(1)
+
+    if max_severity_reached(results, args.fail_on):
+        print(f"[!] Hallazgos con severidad >= {args.fail_on} detectados (--fail-on). Código de salida: 2")
+        sys.exit(2)
 
 
 if __name__ == "__main__":

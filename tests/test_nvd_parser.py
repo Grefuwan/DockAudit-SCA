@@ -73,3 +73,91 @@ def test_load_nvd_gzip_feed(tmp_path):
     entries = parser.load_feed(path)
 
     assert entries[0]["id"] == "CVE-TEST-0002"
+
+
+def test_load_nvd_v2_feed_with_cvss_and_ranges(tmp_path):
+    sample = {
+        "vulnerabilities": [
+            {
+                "cve": {
+                    "id": "CVE-TEST-2001",
+                    "descriptions": [
+                        {"lang": "en", "value": "API 2.0 entry with CVSS and version ranges"}
+                    ],
+                    "metrics": {
+                        "cvssMetricV31": [
+                            {
+                                "cvssData": {
+                                    "baseScore": 9.8,
+                                    "baseSeverity": "CRITICAL",
+                                    "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+                                }
+                            }
+                        ]
+                    },
+                    "configurations": [
+                        {
+                            "nodes": [
+                                {
+                                    "cpeMatch": [
+                                        {
+                                            "vulnerable": True,
+                                            "criteria": "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*",
+                                            "versionStartIncluding": "3.0.0",
+                                            "versionEndExcluding": "3.0.12"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+
+    path = tmp_path / "feed_v2.json"
+    path.write_text(json.dumps(sample), encoding="utf-8")
+
+    entries = NVDParser().load_feed(path)
+    entry = entries[0]
+
+    assert entry["id"] == "CVE-TEST-2001"
+    assert entry["cvss_score"] == 9.8
+    assert entry["cvss_severity"] == "critical"
+    assert entry["cvss_vector"].startswith("CVSS:3.1")
+    assert entry["matches"][0]["cpe"] == "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*"
+    assert entry["matches"][0]["version_start_including"] == "3.0.0"
+    assert entry["matches"][0]["version_end_excluding"] == "3.0.12"
+
+
+def test_load_nvd_v2_sample_feed_entry_level_configurations(tmp_path):
+    # The simplified sample feed keeps configurations at entry level as a dict
+    sample = {
+        "vulnerabilities": [
+            {
+                "cve": {
+                    "id": "CVE-TEST-2002",
+                    "descriptions": [{"lang": "en", "value": "Sample style"}]
+                },
+                "configurations": {
+                    "nodes": [
+                        {
+                            "cpeMatch": [
+                                {"vulnerable": True, "cpe23Uri": "cpe:2.3:a:apache:log4j:*:*:*:*:*:*:*:*"}
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+
+    path = tmp_path / "feed_sample.json"
+    path.write_text(json.dumps(sample), encoding="utf-8")
+
+    entries = NVDParser().load_feed(path)
+
+    assert entries[0]["id"] == "CVE-TEST-2002"
+    assert "cpe:2.3:a:apache:log4j:*:*:*:*:*:*:*:*" in entries[0]["cpes"]
+    assert entries[0]["cvss_score"] is None

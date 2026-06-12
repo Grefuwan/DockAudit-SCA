@@ -25,11 +25,13 @@ Desarrollar un sistema de auditoría de seguridad para entornos Docker que permi
 - Container runtime security analysis
 - Docker image metadata inspection
 - Binary analysis of container image contents (SUID/SGID, sensitive files)
-- Package dependency extraction from Docker images (dpkg, rpm, apk)
-- CVE correlation against NVD feeds with per-package linkage
-- SBOM generation in CycloneDX 1.4 format
+- **Static package extraction** via `docker save` (dpkg, apk, distroless) — no code from the audited image is ever executed; rpm images use a hardened fallback (`--network=none --read-only --cap-drop=ALL`)
+- CVE correlation against NVD feeds with CPE version-range matching, Debian epoch handling and per-package linkage
+- **CVSS v3.1 scoring**: each matched CVE carries its NVD base score, severity and vector
+- SBOM generation in CycloneDX 1.4 format with standard **purl** identifiers (`pkg:deb/...`, `pkg:apk/...`)
 - CIS Docker Benchmark 1.6 compliance evaluation (55 controls) mapped to ISO/IEC 27001:2022
-- Interactive HTML report: sidebar navigation, collapsible findings, source-attribution badges, and package inventory table with CVE linkage
+- Interactive HTML report: sidebar navigation, collapsible findings, CVSS and source-attribution badges, and package inventory table with CVE linkage
+- CI/CD integration: `--fail-on <severity>` exits with code 2 when findings reach the threshold; `--skip-host` audits only images/containers
 - All output files use a consistent `YYYYMMDD-HHMMSS_-_Type_target.ext` naming convention
 
 ## Quick start
@@ -87,6 +89,16 @@ The script splits the year into 90-day windows (NVD API limit), paginates automa
 
 ```bash
 python3 main.py --nvd-feed feeds/nvdcve-2.0-2024.json
+```
+
+### Validación frente a Trivy
+
+`scripts/compare_with_trivy.py` compara los CVEs detectados por DockAudit-SCA con los de [Trivy](https://trivy.dev) sobre la misma imagen, y calcula precisión y recall tomando Trivy como referencia:
+
+```bash
+# Generar el informe en JSON y comparar
+python3 main.py --image dockaudit-demo --nvd-feed sample_nvd.json --output json
+python3 scripts/compare_with_trivy.py --report reports/<ts>_-_Audit_Report_dockaudit-demo.json --image dockaudit-demo
 ```
 
 ## Resultados

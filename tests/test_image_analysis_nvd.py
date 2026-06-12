@@ -34,6 +34,16 @@ def test_image_analysis_generates_sbom_and_matches_nvd(tmp_path, monkeypatch):
     docker_client = DummyDocker(DummyImages([DummyImage()]))
     monkeypatch.setattr("dockaudit.image_analysis.image_scanner.docker.from_env", lambda: docker_client)
 
+    # PackageExtractor now shells out to docker save/run; stub it so the test
+    # never touches the real Docker daemon.
+    monkeypatch.setattr(
+        "dockaudit.image_analysis.package_extractor.PackageExtractor.extract",
+        lambda self, image, timeout=120: (
+            [{"name": "python", "version": "3.11.5", "type": "library", "package_manager": "dpkg"}],
+            "ok"
+        )
+    )
+
     feed = tmp_path / "feed.json"
     feed.write_text(json.dumps({
         "CVE_Items": [
