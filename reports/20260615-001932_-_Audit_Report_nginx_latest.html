@@ -1,0 +1,3014 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DockAudit-SCA — Audit Report</title>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1a202c;
+      --muted: #718096;
+      --sidebar-bg: #1e2a3b;
+      --sidebar-hover: #2d3f56;
+      --sidebar-active: #3b82f6;
+      --header-bg: #1e2a3b;
+      --c-critical: #e53e3e;
+      --c-high: #dd6b20;
+      --c-medium: #d69e2e;
+      --c-low: #38a169;
+      --c-info: #3182ce;
+      --c-host-bg: #e9d8fd; --c-host-text: #553c9a;
+      --c-container-bg: #bee3f8; --c-container-text: #2c5282;
+      --c-image-bg: #c6f6d5; --c-image-text: #22543d;
+      --c-package-bg: #fefcbf; --c-package-text: #744210;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 220px;
+      min-width: 220px;
+      background: var(--sidebar-bg);
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      overflow-y: auto;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-brand {
+      padding: 1.25rem 1rem 0.75rem;
+      border-bottom: 1px solid #2d3f56;
+    }
+    .sidebar-brand .logo {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #f7fafc;
+      letter-spacing: 0.04em;
+    }
+    .sidebar-brand .logo span { color: #60a5fa; }
+    .sidebar-brand .sub { font-size: 0.72rem; color: #94a3b8; margin-top: 0.1rem; }
+    .sidebar-target {
+      padding: 0.6rem 1rem;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      border-bottom: 1px solid #2d3f56;
+      word-break: break-all;
+    }
+    .sidebar-target strong { color: #e2e8f0; display: block; margin-bottom: 0.1rem; }
+    .sidebar-nav { padding: 0.75rem 0; flex: 1; }
+    .nav-section-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      padding: 0.6rem 1rem 0.2rem;
+    }
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.45rem 1rem;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.83rem;
+      border-left: 3px solid transparent;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+    .sidebar-nav a:hover { background: var(--sidebar-hover); color: #e2e8f0; }
+    .sidebar-nav a.active { background: #1e3a5f; color: #fff; border-left-color: var(--sidebar-active); }
+    .nav-count {
+      background: #334155;
+      color: #94a3b8;
+      font-size: 0.7rem;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 0.05rem 0.5rem;
+      min-width: 1.5em;
+      text-align: center;
+    }
+    .sidebar-nav a.active .nav-count { background: #2563eb; color: #fff; }
+
+    /* ── Main ── */
+    .main {
+      margin-left: 220px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .page-header {
+      background: var(--header-bg);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .page-header h1 { font-size: 1.05rem; font-weight: 700; color: #f7fafc; }
+    .page-header .header-meta { font-size: 0.78rem; color: #94a3b8; text-align: right; }
+
+    /* ── Content ── */
+    .content { padding: 1.75rem 2rem; }
+
+    /* ── Stat cards ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 0.85rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 0.9rem 1.1rem;
+      border-left: 4px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .stat-value { font-size: 1.9rem; font-weight: 800; line-height: 1; }
+    .stat-label { font-size: 0.73rem; color: var(--muted); margin-top: 0.2rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    .sc-total   { border-left-color: #3182ce; }   .sc-total .stat-value { color: #3182ce; }
+    .sc-critical{ border-left-color: var(--c-critical); } .sc-critical .stat-value{ color: var(--c-critical); }
+    .sc-high    { border-left-color: var(--c-high); }     .sc-high .stat-value    { color: var(--c-high); }
+    .sc-medium  { border-left-color: var(--c-medium); }   .sc-medium .stat-value  { color: var(--c-medium); }
+    .sc-cve     { border-left-color: #e53e3e; }           .sc-cve .stat-value     { color: #e53e3e; }
+    .sc-pkg     { border-left-color: #38a169; }           .sc-pkg .stat-value     { color: #38a169; }
+
+    /* ── Report section ── */
+    .report-section { margin-bottom: 2.5rem; scroll-margin-top: 70px; }
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1rem;
+    }
+    .section-heading h2 { font-size: 1.05rem; font-weight: 700; }
+    .section-chip {
+      background: #e2e8f0;
+      color: #4a5568;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 12px;
+      padding: 0.1rem 0.6rem;
+    }
+    .empty-msg { color: var(--muted); font-size: 0.88rem; font-style: italic; }
+
+    /* ── Finding card ── */
+    .finding-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 0.6rem;
+      overflow: hidden;
+      transition: box-shadow 0.12s;
+    }
+    .finding-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+    .fc-header {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .fc-header:hover { background: #f8fafc; }
+    .finding-card.open > .fc-header { background: #f8fafc; }
+
+    .fc-body {
+      display: none;
+      padding: 0.1rem 1rem 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+    .finding-card.open > .fc-body { display: block; }
+
+    .sev-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.18rem 0.55rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .sev-pill.critical { background: #fed7d7; color: #c53030; }
+    .sev-pill.high     { background: #feebc8; color: #c05621; }
+    .sev-pill.medium   { background: #fefcbf; color: #975a16; }
+    .sev-pill.low      { background: #c6f6d5; color: #276749; }
+    .sev-pill.info     { background: #bee3f8; color: #2b6cb0; }
+
+    .cvss-pill {
+      display: inline-block;
+      border-radius: 3px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      white-space: nowrap;
+      flex-shrink: 0;
+      background: #2d3748; color: #fff;
+    }
+    .cvss-pill.critical { background: #c53030; }
+    .cvss-pill.high     { background: #c05621; }
+    .cvss-pill.medium   { background: #975a16; }
+    .cvss-pill.low      { background: #276749; }
+
+    .fc-meta {
+      font-size: 0.8rem;
+      color: #4a5568;
+      background: #f7fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 0.45rem 0.7rem;
+      margin-top: 0.6rem;
+      font-family: "SF Mono", "Fira Code", Consolas, monospace;
+      word-break: break-all;
+    }
+
+    .src-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.18rem 0.55rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      flex-shrink: 0;
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .src-pill.host      { background: var(--c-host-bg);      color: var(--c-host-text); }
+    .src-pill.container { background: var(--c-container-bg); color: var(--c-container-text); }
+    .src-pill.image     { background: var(--c-image-bg);     color: var(--c-image-text); }
+    .src-pill.package   { background: var(--c-package-bg);   color: var(--c-package-text); }
+
+    .src-icon { font-size: 0.75rem; }
+
+    .fc-title { font-size: 0.9rem; font-weight: 600; flex: 1; min-width: 0; }
+    .fc-id    { font-size: 0.72rem; color: var(--muted); flex-shrink: 0; font-family: monospace; }
+    .chevron  { font-size: 0.65rem; color: #a0aec0; flex-shrink: 0; transition: transform 0.15s; }
+    .finding-card.open .chevron { transform: rotate(180deg); }
+
+    .fc-desc {
+      font-size: 0.875rem;
+      color: #4a5568;
+      margin: 0.65rem 0 0.5rem;
+      line-height: 1.6;
+    }
+    .fc-rec {
+      font-size: 0.84rem;
+      background: #ebf8ff;
+      border-left: 3px solid var(--c-info);
+      padding: 0.45rem 0.7rem;
+      border-radius: 0 4px 4px 0;
+      color: #2d3748;
+    }
+    .fc-rec::before { content: "Recomendación: "; font-weight: 700; }
+
+    /* ── Package table ── */
+    .pkg-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .pkg-search {
+      padding: 0.45rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.86rem;
+      width: 280px;
+    }
+    .pkg-search:focus { outline: none; border-color: #3182ce; box-shadow: 0 0 0 2px #bee3f8; }
+    .pkg-visible { font-size: 0.8rem; color: var(--muted); }
+
+    .pkg-wrap { background: var(--surface); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .pkg-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    .pkg-table thead tr { background: #1e2a3b; }
+    .pkg-table th {
+      color: #e2e8f0;
+      text-align: left;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.73rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+    .pkg-table td { padding: 0.45rem 0.9rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .pkg-table tbody tr:last-child td { border-bottom: none; }
+    .pkg-table tbody tr:hover td { background: #f7fafc; }
+    .pkg-table tbody tr.has-cve td { background: #fff5f5; }
+    .pkg-table tbody tr.has-cve:hover td { background: #fed7d7; }
+
+    .pkg-name  { font-weight: 600; }
+    .pkg-ver   { font-family: monospace; font-size: 0.8rem; color: #4a5568; }
+    .pkg-mgr   { font-size: 0.75rem; background: #e2e8f0; padding: 0.1rem 0.4rem; border-radius: 3px; color: #4a5568; }
+    .pkg-img   { font-size: 0.78rem; color: var(--muted); font-family: monospace; white-space: nowrap; }
+    .cve-badge { display: inline-block; background: var(--c-critical); color: #fff; border-radius: 3px; padding: 0.1rem 0.45rem; font-size: 0.73rem; font-weight: 700; margin: 0.1rem 0.15rem 0.1rem 0; white-space: nowrap; }
+
+    /* ── Footer ── */
+    .report-footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      padding: 1.25rem 0;
+      border-top: 1px solid var(--border);
+      margin-top: 1rem;
+    }
+    .report-footer code { font-family: monospace; color: #4a5568; }
+
+    /* ── Severity bar (mini chart) ── */
+    .sev-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 0.9rem; gap: 2px; }
+    .sev-bar-seg { height: 100%; border-radius: 2px; }
+
+    @media (max-width: 760px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .content { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+
+
+
+
+
+  
+
+  
+    
+    
+    
+    
+    
+    
+  
+    
+    
+    
+    
+    
+    
+  
+
+  
+    
+    
+    
+    
+    
+    
+  
+    
+    
+    
+    
+    
+    
+  
+    
+    
+    
+    
+    
+    
+  
+
+  
+
+  
+    
+    
+    
+    
+    
+    
+  
+    
+    
+    
+    
+    
+    
+  
+    
+    
+    
+    
+    
+    
+  
+    
+    
+    
+    
+    
+    
+  
+    
+    
+    
+    
+    
+    
+  
+    
+    
+    
+    
+    
+    
+  
+    
+    
+    
+    
+    
+    
+  
+    
+    
+    
+    
+    
+    
+  
+    
+    
+    
+    
+    
+    
+  
+
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo">Dock<span>Audit</span>-SCA</div>
+    <div class="sub">Docker Security Audit</div>
+  </div>
+  <div class="sidebar-target">
+    <strong>Objetivo</strong>Image: nginx:latest
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Hallazgos</div>
+    
+    <a href="#sec-host">
+      Auditoría del Host
+      <span class="nav-count">0</span>
+    </a>
+    
+    <a href="#sec-containers">
+      Contenedores
+      <span class="nav-count">2</span>
+    </a>
+    
+    <a href="#sec-images">
+      Imágenes Docker
+      <span class="nav-count">3</span>
+    </a>
+    
+    <a href="#sec-binaries">
+      Análisis de Binarios
+      <span class="nav-count">0</span>
+    </a>
+    
+    <a href="#sec-vulnerabilities">
+      Vulnerabilidades CVE
+      <span class="nav-count">9</span>
+    </a>
+    
+    
+    <div class="nav-section-label" style="margin-top:0.5rem">Inventario</div>
+    <a href="#sec-packages">
+      Paquetes
+      <span class="nav-count">151</span>
+    </a>
+    
+  </nav>
+</aside>
+
+<!-- ── Main ── -->
+<div class="main">
+  <header class="page-header">
+    <h1>Audit Report</h1>
+    <div class="header-meta">
+      14 hallazgos &nbsp;·&nbsp; 151 paquetes &nbsp;·&nbsp; 9 CVEs
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ── Stat cards ── -->
+    <div class="stats-grid">
+      <div class="stat-card sc-total">
+        <div class="stat-value">14</div>
+        <div class="stat-label">Hallazgos</div>
+      </div>
+      <div class="stat-card sc-critical">
+        <div class="stat-value">4</div>
+        <div class="stat-label">Críticos</div>
+      </div>
+      <div class="stat-card sc-high">
+        <div class="stat-value">6</div>
+        <div class="stat-label">Altos</div>
+      </div>
+      <div class="stat-card sc-medium">
+        <div class="stat-value">4</div>
+        <div class="stat-label">Medios</div>
+      </div>
+      <div class="stat-card sc-cve">
+        <div class="stat-value">9</div>
+        <div class="stat-label">CVEs</div>
+      </div>
+      <div class="stat-card sc-pkg">
+        <div class="stat-value">151</div>
+        <div class="stat-label">Paquetes</div>
+      </div>
+    </div>
+
+    <!-- ── Findings sections ── -->
+    
+    <section class="report-section" id="sec-host">
+      <div class="section-heading">
+        <h2>Auditoría del Host</h2>
+        <span class="section-chip">0</span>
+      </div>
+
+      
+        <p class="empty-msg">No hay hallazgos para el nivel de severidad configurado.</p>
+      
+    </section>
+    
+    <section class="report-section" id="sec-containers">
+      <div class="section-heading">
+        <h2>Contenedores</h2>
+        <span class="section-chip">2</span>
+      </div>
+
+      
+        
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill high">high</span>
+            
+            
+            <span class="src-pill container" title="hopeful_lalande">hopeful_lalande</span>
+            
+            <span class="fc-title">Privileged container detected: hopeful_lalande</span>
+            <span class="fc-id">CONT-002</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            
+            <p class="fc-desc">A container is running with privileged access.</p>
+            
+            
+            <div class="fc-rec">Avoid privileged containers unless strictly required.</div>
+            
+            
+          </div>
+        </div>
+        
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill medium">medium</span>
+            
+            
+            <span class="src-pill container" title="hopeful_lalande">hopeful_lalande</span>
+            
+            <span class="fc-title">Bind mount detected: hopeful_lalande</span>
+            <span class="fc-id">CONT-005</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            
+            <p class="fc-desc">The container uses a host bind mount, which can expose host files.</p>
+            
+            
+            <div class="fc-rec">Restrict bind mounts and avoid mounting sensitive host directories.</div>
+            
+            
+          </div>
+        </div>
+        
+      
+    </section>
+    
+    <section class="report-section" id="sec-images">
+      <div class="section-heading">
+        <h2>Imágenes Docker</h2>
+        <span class="section-chip">3</span>
+      </div>
+
+      
+        
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill medium">medium</span>
+            
+            
+            <span class="src-pill image" title="nginx:latest">nginx:latest</span>
+            
+            <span class="fc-title">Image tagged with latest</span>
+            <span class="fc-id">IMG-3864</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            
+            <p class="fc-desc">Image tags nginx:latest use the latest tag, which is not immutable.</p>
+            
+            
+            <div class="fc-rec">Use explicit immutable tags instead of &#39;latest&#39;.</div>
+            
+            
+          </div>
+        </div>
+        
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill medium">medium</span>
+            
+            
+            <span class="src-pill image" title="cgr.dev/chainguard/nginx:latest">cgr.dev/chainguard/nginx:latest</span>
+            
+            <span class="fc-title">Image tagged with latest</span>
+            <span class="fc-id">IMG-1101</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            
+            <p class="fc-desc">Image tags cgr.dev/chainguard/nginx:latest use the latest tag, which is not immutable.</p>
+            
+            
+            <div class="fc-rec">Use explicit immutable tags instead of &#39;latest&#39;.</div>
+            
+            
+          </div>
+        </div>
+        
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill medium">medium</span>
+            
+            
+            <span class="src-pill image" title="cgr.dev/chainguard/nginx:latest">cgr.dev/chainguard/nginx:latest</span>
+            
+            <span class="fc-title">No package manager detected for image cgr.dev/chainguard/nginx:latest</span>
+            <span class="fc-id">IMG-PKG-NOMGR-sha256:7</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            
+            <p class="fc-desc">Unable to extract installed packages because the image has no supported package manager.</p>
+            
+            
+            <div class="fc-rec">Consider scanning the image filesystem or using a different scanning approach.</div>
+            
+            
+          </div>
+        </div>
+        
+      
+    </section>
+    
+    <section class="report-section" id="sec-binaries">
+      <div class="section-heading">
+        <h2>Análisis de Binarios</h2>
+        <span class="section-chip">0</span>
+      </div>
+
+      
+        <p class="empty-msg">No hay hallazgos para el nivel de severidad configurado.</p>
+      
+    </section>
+    
+    <section class="report-section" id="sec-vulnerabilities">
+      <div class="section-heading">
+        <h2>Vulnerabilidades CVE</h2>
+        <span class="section-chip">9</span>
+      </div>
+
+      
+        
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill critical">critical</span>
+            
+            <span class="cvss-pill critical" title="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H">CVSS 9.8</span>
+            
+            
+            <span class="src-pill package" title="nginx:latest">nginx:latest</span>
+            
+            <span class="fc-title">Vulnerability matched for curl</span>
+            <span class="fc-id">CVE-2022-32207</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            
+            <p class="fc-desc">When curl saves cookies, alt-svc and hsts data to local files, it makes the operation atomic by renaming a temporary file to the final target. This allows a local attacker to change the permissions of the final file.</p>
+            
+            
+            <div class="fc-rec">Review the affected image and apply available fixes or use a patched base image.</div>
+            
+            
+            <div class="fc-meta">
+              Paquete afectado: curl 8.14.1-2+deb13u3 &nbsp;·&nbsp; CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+            </div>
+            
+          </div>
+        </div>
+        
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill critical">critical</span>
+            
+            <span class="cvss-pill critical" title="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H">CVSS 9.8</span>
+            
+            
+            <span class="src-pill package" title="nginx:latest">nginx:latest</span>
+            
+            <span class="fc-title">Vulnerability matched for curl</span>
+            <span class="fc-id">CVE-2022-42915</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            
+            <p class="fc-desc">curl before 7.86.0 has a double free vulnerability in the HTTP proxy connection code. An attacker controlling a malicious HTTP proxy can trigger this to potentially execute arbitrary code.</p>
+            
+            
+            <div class="fc-rec">Review the affected image and apply available fixes or use a patched base image.</div>
+            
+            
+            <div class="fc-meta">
+              Paquete afectado: curl 8.14.1-2+deb13u3 &nbsp;·&nbsp; CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+            </div>
+            
+          </div>
+        </div>
+        
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill high">high</span>
+            
+            <span class="cvss-pill high" title="CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H">CVSS 8.8</span>
+            
+            
+            <span class="src-pill package" title="nginx:latest">nginx:latest</span>
+            
+            <span class="fc-title">Vulnerability matched for libwebp7</span>
+            <span class="fc-id">CVE-2023-4863</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            
+            <p class="fc-desc">Heap buffer overflow in libwebp allows a remote attacker to perform an out of bounds memory write via a crafted image. Affects any software embedding libwebp, including browsers and image processing tools.</p>
+            
+            
+            <div class="fc-rec">Review the affected image and apply available fixes or use a patched base image.</div>
+            
+            
+            <div class="fc-meta">
+              Paquete afectado: libwebp7 1.5.0-0.1 &nbsp;·&nbsp; CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H
+            </div>
+            
+          </div>
+        </div>
+        
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill high">high</span>
+            
+            <span class="cvss-pill high" title="CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H">CVSS 7.8</span>
+            
+            
+            <span class="src-pill package" title="nginx:latest">nginx:latest</span>
+            
+            <span class="fc-title">Vulnerability matched for ncurses-base</span>
+            <span class="fc-id">CVE-2023-29491</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            
+            <p class="fc-desc">ncurses before 6.4-20230408 has memory-corruption issues when processing malformed terminfo data. An attacker can exploit crafted terminfo data to cause stack or heap corruption.</p>
+            
+            
+            <div class="fc-rec">Review the affected image and apply available fixes or use a patched base image.</div>
+            
+            
+            <div class="fc-meta">
+              Paquete afectado: ncurses-base 6.5+20250216-2 &nbsp;·&nbsp; CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+            </div>
+            
+          </div>
+        </div>
+        
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill high">high</span>
+            
+            <span class="cvss-pill high" title="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H">CVSS 7.5</span>
+            
+            
+            <span class="src-pill package" title="nginx:latest">nginx:latest</span>
+            
+            <span class="fc-title">Vulnerability matched for nginx</span>
+            <span class="fc-id">CVE-2023-44487</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            
+            <p class="fc-desc">The HTTP/2 protocol allows a denial of service because request cancellation can reset many streams quickly. Known as the HTTP/2 Rapid Reset attack, it has been exploited in large-scale DDoS campaigns.</p>
+            
+            
+            <div class="fc-rec">Review the affected image and apply available fixes or use a patched base image.</div>
+            
+            
+            <div class="fc-meta">
+              Paquete afectado: nginx 1.31.1-1~trixie &nbsp;·&nbsp; CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
+            </div>
+            
+          </div>
+        </div>
+        
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill high">high</span>
+            
+            <span class="cvss-pill high" title="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H">CVSS 7.5</span>
+            
+            
+            <span class="src-pill package" title="nginx:latest">nginx:latest</span>
+            
+            <span class="fc-title">Vulnerability matched for openssl</span>
+            <span class="fc-id">CVE-2022-0778</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            
+            <p class="fc-desc">The BN_mod_sqrt() function in OpenSSL, which computes a modular square root, contains a bug that can cause it to loop forever for non-prime moduli. This can be triggered by malformed certificates, causing a denial of service.</p>
+            
+            
+            <div class="fc-rec">Review the affected image and apply available fixes or use a patched base image.</div>
+            
+            
+            <div class="fc-meta">
+              Paquete afectado: openssl 3.5.6-1~deb13u2 &nbsp;·&nbsp; CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
+            </div>
+            
+          </div>
+        </div>
+        
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill critical">critical</span>
+            
+            <span class="cvss-pill critical" title="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H">CVSS 9.8</span>
+            
+            
+            <span class="src-pill package" title="nginx:latest">nginx:latest</span>
+            
+            <span class="fc-title">Vulnerability matched for openssl</span>
+            <span class="fc-id">CVE-2022-1292</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            
+            <p class="fc-desc">The c_rehash script in OpenSSL does not properly sanitise shell metacharacters, allowing command injection. An attacker could exploit this to execute arbitrary commands with the privileges of the script.</p>
+            
+            
+            <div class="fc-rec">Review the affected image and apply available fixes or use a patched base image.</div>
+            
+            
+            <div class="fc-meta">
+              Paquete afectado: openssl 3.5.6-1~deb13u2 &nbsp;·&nbsp; CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+            </div>
+            
+          </div>
+        </div>
+        
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill high">high</span>
+            
+            <span class="cvss-pill high" title="CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:H">CVSS 7.4</span>
+            
+            
+            <span class="src-pill package" title="nginx:latest">nginx:latest</span>
+            
+            <span class="fc-title">Vulnerability matched for openssl</span>
+            <span class="fc-id">CVE-2023-0286</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            
+            <p class="fc-desc">A type confusion vulnerability in OpenSSL relating to X.400 address processing inside an X.509 GeneralName. This may allow an attacker to pass arbitrary pointers to a memcmp call, enabling memory reads or denial of service.</p>
+            
+            
+            <div class="fc-rec">Review the affected image and apply available fixes or use a patched base image.</div>
+            
+            
+            <div class="fc-meta">
+              Paquete afectado: openssl 3.5.6-1~deb13u2 &nbsp;·&nbsp; CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:H
+            </div>
+            
+          </div>
+        </div>
+        
+        <div class="finding-card" onclick="toggleCard(this)">
+          <div class="fc-header">
+            <span class="sev-pill critical">critical</span>
+            
+            <span class="cvss-pill critical" title="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H">CVSS 9.8</span>
+            
+            
+            <span class="src-pill package" title="nginx:latest">nginx:latest</span>
+            
+            <span class="fc-title">Vulnerability matched for zlib1g</span>
+            <span class="fc-id">CVE-2022-37434</span>
+            <span class="chevron">▼</span>
+          </div>
+          <div class="fc-body">
+            
+            <p class="fc-desc">zlib through 1.2.12 has a heap-based buffer over-read or buffer overflow in inflate() via a large gzip header extra field, triggered by calling inflateGetHeader.</p>
+            
+            
+            <div class="fc-rec">Review the affected image and apply available fixes or use a patched base image.</div>
+            
+            
+            <div class="fc-meta">
+              Paquete afectado: zlib1g 1:1.3.dfsg+really1.3.1-1+b1 &nbsp;·&nbsp; CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H
+            </div>
+            
+          </div>
+        </div>
+        
+      
+    </section>
+    
+
+    <!-- ── Package inventory ── -->
+    
+    <section class="report-section" id="sec-packages">
+      <div class="section-heading">
+        <h2>Inventario de paquetes</h2>
+        <span class="section-chip">151</span>
+      </div>
+      <div class="pkg-toolbar">
+        <input class="pkg-search" type="text" id="pkgSearch" placeholder="Filtrar por nombre, versión o imagen..." oninput="filterPackages()">
+        <span class="pkg-visible" id="pkgVisible">151 visibles</span>
+      </div>
+      <div class="pkg-wrap">
+        <table class="pkg-table" id="pkgTable">
+          <thead>
+            <tr>
+              <th>Paquete</th>
+              <th>Versión</th>
+              <th>Gestor</th>
+              <th>Imagen</th>
+              <th>CVEs</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">apt</span></td>
+              <td><span class="pkg-ver">3.0.3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">base-files</span></td>
+              <td><span class="pkg-ver">13.8+deb13u5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">base-passwd</span></td>
+              <td><span class="pkg-ver">3.6.7</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">bash</span></td>
+              <td><span class="pkg-ver">5.2.37-2+b9</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">bsdutils</span></td>
+              <td><span class="pkg-ver">1:2.41-5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">ca-certificates</span></td>
+              <td><span class="pkg-ver">20250419</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">coreutils</span></td>
+              <td><span class="pkg-ver">9.7-3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="has-cve">
+              <td><span class="pkg-name">curl</span></td>
+              <td><span class="pkg-ver">8.14.1-2+deb13u3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span class="cve-badge">CVE-2022-32207</span><span class="cve-badge">CVE-2022-42915</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">dash</span></td>
+              <td><span class="pkg-ver">0.5.12-12</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">debconf</span></td>
+              <td><span class="pkg-ver">1.5.91</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">debian-archive-keyring</span></td>
+              <td><span class="pkg-ver">2025.1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">debianutils</span></td>
+              <td><span class="pkg-ver">5.23.2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">diffutils</span></td>
+              <td><span class="pkg-ver">1:3.10-4</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">dpkg</span></td>
+              <td><span class="pkg-ver">1.22.22</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">findutils</span></td>
+              <td><span class="pkg-ver">4.10.0-3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">fontconfig-config</span></td>
+              <td><span class="pkg-ver">2.15.0-2.3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">fonts-dejavu-core</span></td>
+              <td><span class="pkg-ver">2.37-8</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">fonts-dejavu-mono</span></td>
+              <td><span class="pkg-ver">2.37-8</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">gcc-14-base</span></td>
+              <td><span class="pkg-ver">14.2.0-19</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">gettext-base</span></td>
+              <td><span class="pkg-ver">0.23.1-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">grep</span></td>
+              <td><span class="pkg-ver">3.11-4</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">gzip</span></td>
+              <td><span class="pkg-ver">1.13-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">hostname</span></td>
+              <td><span class="pkg-ver">3.25</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">init-system-helpers</span></td>
+              <td><span class="pkg-ver">1.69~deb13u1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libabsl20240722</span></td>
+              <td><span class="pkg-ver">20240722.0-4</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libacl1</span></td>
+              <td><span class="pkg-ver">2.3.2-2+b1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libaom3</span></td>
+              <td><span class="pkg-ver">3.12.1-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libapt-pkg7.0</span></td>
+              <td><span class="pkg-ver">3.0.3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libattr1</span></td>
+              <td><span class="pkg-ver">1:2.5.2-3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libaudit-common</span></td>
+              <td><span class="pkg-ver">1:4.0.2-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libaudit1</span></td>
+              <td><span class="pkg-ver">1:4.0.2-2+b2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libavif16</span></td>
+              <td><span class="pkg-ver">1.2.1-1.2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libblkid1</span></td>
+              <td><span class="pkg-ver">2.41-5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libbrotli1</span></td>
+              <td><span class="pkg-ver">1.1.0-2+b7</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libbsd0</span></td>
+              <td><span class="pkg-ver">0.12.2-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libbz2-1.0</span></td>
+              <td><span class="pkg-ver">1.0.8-6</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libc-bin</span></td>
+              <td><span class="pkg-ver">2.41-12+deb13u3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libc6</span></td>
+              <td><span class="pkg-ver">2.41-12+deb13u3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libcap-ng0</span></td>
+              <td><span class="pkg-ver">0.8.5-4+b1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libcap2</span></td>
+              <td><span class="pkg-ver">1:2.75-10+deb13u1+b1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libcom-err2</span></td>
+              <td><span class="pkg-ver">1.47.2-3+b11</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libcrypt1</span></td>
+              <td><span class="pkg-ver">1:4.4.38-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libcurl4t64</span></td>
+              <td><span class="pkg-ver">8.14.1-2+deb13u3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libdav1d7</span></td>
+              <td><span class="pkg-ver">1.5.1-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libdb5.3t64</span></td>
+              <td><span class="pkg-ver">5.3.28+dfsg2-9</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libde265-0</span></td>
+              <td><span class="pkg-ver">1.0.15-1+b3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libdebconfclient0</span></td>
+              <td><span class="pkg-ver">0.280</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libdeflate0</span></td>
+              <td><span class="pkg-ver">1.23-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libedit2</span></td>
+              <td><span class="pkg-ver">3.1-20250104-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libexpat1</span></td>
+              <td><span class="pkg-ver">2.7.1-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libffi8</span></td>
+              <td><span class="pkg-ver">3.4.8-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libfontconfig1</span></td>
+              <td><span class="pkg-ver">2.15.0-2.3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libfreetype6</span></td>
+              <td><span class="pkg-ver">2.13.3+dfsg-1+deb13u1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libgav1-1</span></td>
+              <td><span class="pkg-ver">0.19.0-3+b1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libgcc-s1</span></td>
+              <td><span class="pkg-ver">14.2.0-19</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libgcrypt20</span></td>
+              <td><span class="pkg-ver">1.11.0-7+deb13u1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libgd3</span></td>
+              <td><span class="pkg-ver">2.3.3-13</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libgeoip1t64</span></td>
+              <td><span class="pkg-ver">1.6.12-11.1+b1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libgmp10</span></td>
+              <td><span class="pkg-ver">2:6.3.0+dfsg-3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libgnutls30t64</span></td>
+              <td><span class="pkg-ver">3.8.9-3+deb13u4</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libgomp1</span></td>
+              <td><span class="pkg-ver">14.2.0-19</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libgpg-error0</span></td>
+              <td><span class="pkg-ver">1.51-4</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libgssapi-krb5-2</span></td>
+              <td><span class="pkg-ver">1.21.3-5+deb13u1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libheif-plugin-dav1d</span></td>
+              <td><span class="pkg-ver">1.19.8-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libheif-plugin-libde265</span></td>
+              <td><span class="pkg-ver">1.19.8-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libheif1</span></td>
+              <td><span class="pkg-ver">1.19.8-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libhogweed6t64</span></td>
+              <td><span class="pkg-ver">3.10.1-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libidn2-0</span></td>
+              <td><span class="pkg-ver">2.3.8-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libimagequant0</span></td>
+              <td><span class="pkg-ver">2.18.0-1+b2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libjbig0</span></td>
+              <td><span class="pkg-ver">2.1-6.1+b2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libjpeg62-turbo</span></td>
+              <td><span class="pkg-ver">1:2.1.5-4</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libk5crypto3</span></td>
+              <td><span class="pkg-ver">1.21.3-5+deb13u1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libkeyutils1</span></td>
+              <td><span class="pkg-ver">1.6.3-6</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libkrb5-3</span></td>
+              <td><span class="pkg-ver">1.21.3-5+deb13u1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libkrb5support0</span></td>
+              <td><span class="pkg-ver">1.21.3-5+deb13u1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">liblastlog2-2</span></td>
+              <td><span class="pkg-ver">2.41-5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libldap2</span></td>
+              <td><span class="pkg-ver">2.6.10+dfsg-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">liblerc4</span></td>
+              <td><span class="pkg-ver">4.0.0+ds-5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">liblz4-1</span></td>
+              <td><span class="pkg-ver">1.10.0-4</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">liblzma5</span></td>
+              <td><span class="pkg-ver">5.8.1-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libmd0</span></td>
+              <td><span class="pkg-ver">1.1.0-2+b1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libmount1</span></td>
+              <td><span class="pkg-ver">2.41-5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libnettle8t64</span></td>
+              <td><span class="pkg-ver">3.10.1-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libnghttp2-14</span></td>
+              <td><span class="pkg-ver">1.64.0-1.1+deb13u1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libnghttp3-9</span></td>
+              <td><span class="pkg-ver">1.8.0-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libp11-kit0</span></td>
+              <td><span class="pkg-ver">0.25.5-3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libpam-modules</span></td>
+              <td><span class="pkg-ver">1.7.0-5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libpam-modules-bin</span></td>
+              <td><span class="pkg-ver">1.7.0-5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libpam-runtime</span></td>
+              <td><span class="pkg-ver">1.7.0-5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libpam0g</span></td>
+              <td><span class="pkg-ver">1.7.0-5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libpcre2-8-0</span></td>
+              <td><span class="pkg-ver">10.46-1~deb13u1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libpng16-16t64</span></td>
+              <td><span class="pkg-ver">1.6.48-1+deb13u5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libpsl5t64</span></td>
+              <td><span class="pkg-ver">0.21.2-1.1+b1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">librav1e0.7</span></td>
+              <td><span class="pkg-ver">0.7.1-9+b2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">librtmp1</span></td>
+              <td><span class="pkg-ver">2.4+20151223.gitfa8646d.1-2+b5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libsasl2-2</span></td>
+              <td><span class="pkg-ver">2.1.28+dfsg1-9</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libsasl2-modules-db</span></td>
+              <td><span class="pkg-ver">2.1.28+dfsg1-9</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libseccomp2</span></td>
+              <td><span class="pkg-ver">2.6.0-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libselinux1</span></td>
+              <td><span class="pkg-ver">3.8.1-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libsemanage-common</span></td>
+              <td><span class="pkg-ver">3.8.1-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libsemanage2</span></td>
+              <td><span class="pkg-ver">3.8.1-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libsepol2</span></td>
+              <td><span class="pkg-ver">3.8.1-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libsharpyuv0</span></td>
+              <td><span class="pkg-ver">1.5.0-0.1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libsmartcols1</span></td>
+              <td><span class="pkg-ver">2.41-5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libsqlite3-0</span></td>
+              <td><span class="pkg-ver">3.46.1-7+deb13u1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libssh2-1t64</span></td>
+              <td><span class="pkg-ver">1.11.1-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libssl3t64</span></td>
+              <td><span class="pkg-ver">3.5.6-1~deb13u2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libstdc++6</span></td>
+              <td><span class="pkg-ver">14.2.0-19</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libsvtav1enc2</span></td>
+              <td><span class="pkg-ver">2.3.0+dfsg-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libsystemd0</span></td>
+              <td><span class="pkg-ver">257.13-1~deb13u1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libtasn1-6</span></td>
+              <td><span class="pkg-ver">4.20.0-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libtiff6</span></td>
+              <td><span class="pkg-ver">4.7.0-3+deb13u2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libtinfo6</span></td>
+              <td><span class="pkg-ver">6.5+20250216-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libudev1</span></td>
+              <td><span class="pkg-ver">257.13-1~deb13u1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libunistring5</span></td>
+              <td><span class="pkg-ver">1.3-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libuuid1</span></td>
+              <td><span class="pkg-ver">2.41-5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="has-cve">
+              <td><span class="pkg-name">libwebp7</span></td>
+              <td><span class="pkg-ver">1.5.0-0.1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span class="cve-badge">CVE-2023-4863</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libx11-6</span></td>
+              <td><span class="pkg-ver">2:1.8.12-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libx11-data</span></td>
+              <td><span class="pkg-ver">2:1.8.12-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libxau6</span></td>
+              <td><span class="pkg-ver">1:1.0.11-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libxcb1</span></td>
+              <td><span class="pkg-ver">1.17.0-2+b1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libxdmcp6</span></td>
+              <td><span class="pkg-ver">1:1.1.5-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libxml2</span></td>
+              <td><span class="pkg-ver">2.12.7+dfsg+really2.9.14-2.1+deb13u2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libxpm4</span></td>
+              <td><span class="pkg-ver">1:3.5.17-1+b3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libxslt1.1</span></td>
+              <td><span class="pkg-ver">1.1.35-1.2+deb13u3</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libxxhash0</span></td>
+              <td><span class="pkg-ver">0.8.3-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libyuv0</span></td>
+              <td><span class="pkg-ver">0.0.1904.20250204-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">libzstd1</span></td>
+              <td><span class="pkg-ver">1.5.7+dfsg-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">login</span></td>
+              <td><span class="pkg-ver">1:4.16.0-2+really2.41-5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">login.defs</span></td>
+              <td><span class="pkg-ver">1:4.17.4-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">mawk</span></td>
+              <td><span class="pkg-ver">1.3.4.20250131-1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">mount</span></td>
+              <td><span class="pkg-ver">2.41-5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="has-cve">
+              <td><span class="pkg-name">ncurses-base</span></td>
+              <td><span class="pkg-ver">6.5+20250216-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span class="cve-badge">CVE-2023-29491</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="has-cve">
+              <td><span class="pkg-name">ncurses-bin</span></td>
+              <td><span class="pkg-ver">6.5+20250216-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span class="cve-badge">CVE-2023-29491</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="has-cve">
+              <td><span class="pkg-name">nginx</span></td>
+              <td><span class="pkg-ver">1.31.1-1~trixie</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span class="cve-badge">CVE-2023-44487</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">nginx-module-acme</span></td>
+              <td><span class="pkg-ver">1.31.1+0.4.1-1~trixie</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">nginx-module-geoip</span></td>
+              <td><span class="pkg-ver">1.31.1-1~trixie</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">nginx-module-image-filter</span></td>
+              <td><span class="pkg-ver">1.31.1-1~trixie</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">nginx-module-njs</span></td>
+              <td><span class="pkg-ver">1.31.1+0.9.9-1~trixie</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">nginx-module-xslt</span></td>
+              <td><span class="pkg-ver">1.31.1-1~trixie</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="has-cve">
+              <td><span class="pkg-name">openssl</span></td>
+              <td><span class="pkg-ver">3.5.6-1~deb13u2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span class="cve-badge">CVE-2022-0778</span><span class="cve-badge">CVE-2022-1292</span><span class="cve-badge">CVE-2023-0286</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">openssl-provider-legacy</span></td>
+              <td><span class="pkg-ver">3.5.6-1~deb13u2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">passwd</span></td>
+              <td><span class="pkg-ver">1:4.17.4-2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">perl-base</span></td>
+              <td><span class="pkg-ver">5.40.1-6</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">sed</span></td>
+              <td><span class="pkg-ver">4.9-2+deb13u1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">sqv</span></td>
+              <td><span class="pkg-ver">1.3.0-3+b2</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">sysvinit-utils</span></td>
+              <td><span class="pkg-ver">3.14-4</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">tar</span></td>
+              <td><span class="pkg-ver">1.35+dfsg-3.1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">tzdata</span></td>
+              <td><span class="pkg-ver">2026b-0+deb13u1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="">
+              <td><span class="pkg-name">util-linux</span></td>
+              <td><span class="pkg-ver">2.41-5</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span style="color:#a0aec0">—</span>
+                
+              </td>
+            </tr>
+            
+            
+            <tr class="has-cve">
+              <td><span class="pkg-name">zlib1g</span></td>
+              <td><span class="pkg-ver">1:1.3.dfsg+really1.3.1-1+b1</span></td>
+              <td><span class="pkg-mgr">dpkg</span></td>
+              <td><span class="pkg-img">nginx:latest</span></td>
+              <td>
+                
+                  <span class="cve-badge">CVE-2022-37434</span>
+                
+              </td>
+            </tr>
+            
+          </tbody>
+        </table>
+      </div>
+    </section>
+    
+
+    
+    <div class="report-footer">
+      SBOM: <code>reports/sbom/20260615-001932_-_SBOM_nginx_latest.json</code>
+    </div>
+    
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+function toggleCard(card) {
+  card.classList.toggle('open');
+}
+
+function filterPackages() {
+  var q = document.getElementById('pkgSearch').value.toLowerCase();
+  var rows = document.querySelectorAll('#pkgTable tbody tr');
+  var visible = 0;
+  rows.forEach(function(r) {
+    var show = r.textContent.toLowerCase().includes(q);
+    r.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('pkgVisible').textContent = visible + ' visibles';
+}
+
+(function() {
+  var links = Array.from(document.querySelectorAll('.sidebar-nav a'));
+  var ids   = links.map(function(a) { return a.getAttribute('href').slice(1); });
+  var secs  = ids.map(function(id) { return document.getElementById(id); });
+
+  function updateActive() {
+    var y = window.scrollY + 90;
+    var active = -1;
+    secs.forEach(function(s, i) { if (s && s.offsetTop <= y) active = i; });
+    links.forEach(function(l, i) { l.classList.toggle('active', i === active); });
+  }
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+})();
+</script>
+</body>
+</html>

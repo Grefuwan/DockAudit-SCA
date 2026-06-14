@@ -1,0 +1,2484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DockAudit-SCA Compliance Report</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+
+:root {
+    --primary: #1a365d;
+    --primary-light: #2c5282;
+    --accent: #3182ce;
+    --compliant-bg: #c6f6d5;
+    --compliant-text: #22543d;
+    --compliant-border: #276749;
+    --noncompliant-bg: #fed7d7;
+    --noncompliant-text: #822727;
+    --noncompliant-border: #c53030;
+    --unknown-bg: #feebc8;
+    --unknown-text: #7b341e;
+    --unknown-border: #c05621;
+    --severity-critical: #742a2a;
+    --severity-high: #c05621;
+    --severity-medium: #975a16;
+    --severity-low: #276749;
+    --bg: #f7fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #2d3748;
+    --text-muted: #718096;
+    --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 14px;
+}
+.container { max-width: 1280px; margin: 0 auto; padding: 20px; }
+
+/* Header */
+header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    padding: 28px 36px;
+    border-radius: 8px 8px 0 0;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.header-icon { font-size: 2.2em; }
+header h1 { font-size: 1.9em; font-weight: 700; letter-spacing: -0.5px; }
+header p { opacity: 0.75; font-size: 0.88em; margin-top: 3px; }
+
+/* Metadata bar */
+.metadata-bar {
+    background: var(--primary-light);
+    color: rgba(255,255,255,0.88);
+    padding: 9px 36px;
+    display: flex;
+    gap: 36px;
+    font-size: 0.82em;
+    border-radius: 0 0 8px 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+/* Summary grid */
+.summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 260px;
+    gap: 14px;
+    margin-bottom: 20px;
+    align-items: stretch;
+}
+.stat-card {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 18px 16px;
+    box-shadow: var(--shadow);
+    border-top: 4px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+}
+.stat-card.card-total    { border-top-color: var(--accent); }
+.stat-card.card-compliant    { border-top-color: var(--compliant-border); }
+.stat-card.card-noncompliant { border-top-color: var(--noncompliant-border); }
+.stat-card.card-unknown      { border-top-color: var(--unknown-border); }
+.stat-card.card-rate         { border-top-color: var(--primary); }
+.stat-number { font-size: 2.2em; font-weight: 700; line-height: 1; }
+.stat-card.card-total        .stat-number { color: var(--accent); }
+.stat-card.card-compliant    .stat-number { color: var(--compliant-border); }
+.stat-card.card-noncompliant .stat-number { color: var(--noncompliant-border); }
+.stat-card.card-unknown      .stat-number { color: var(--unknown-border); }
+.stat-card.card-rate         .stat-number { color: var(--primary); }
+.stat-label {
+    font-size: 0.72em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.chart-card {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Section */
+.section {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 22px 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+.section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+}
+.section-title { font-size: 1.0em; font-weight: 700; color: var(--primary); }
+.section-subtitle { font-size: 0.82em; color: var(--text-muted); margin-top: 2px; }
+
+/* Filter bar */
+.filter-bar {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 13px 18px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.filter-bar label {
+    font-size: 0.75em;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+.filter-bar select, .filter-bar input[type="text"] {
+    padding: 5px 9px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.85em;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+}
+.filter-bar select:focus, .filter-bar input:focus { border-color: var(--accent); }
+.filter-bar input[type="text"] { min-width: 180px; }
+.filter-count { margin-left: auto; font-size: 0.82em; color: var(--text-muted); white-space: nowrap; }
+.btn-sm {
+    padding: 5px 11px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.8em;
+    cursor: pointer;
+    font-weight: 500;
+}
+.btn-sm:hover { background: var(--border); }
+
+/* Findings table */
+table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+thead tr { background: var(--bg); }
+th {
+    padding: 9px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.78em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+}
+td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr.finding-row { cursor: pointer; transition: background 0.1s; }
+tr.finding-row:hover { background: #edf2f7; }
+
+/* Expand button */
+.expand-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 0.7em;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+.expand-btn:hover { background: #ebf8ff; color: var(--accent); border-color: var(--accent); }
+.expand-btn.expanded { color: var(--accent); border-color: var(--accent); background: #ebf8ff; }
+
+/* Detail row */
+.detail-row td {
+    background: #f8fafc;
+    padding: 0;
+    border-bottom: 2px solid var(--border);
+}
+.detail-content {
+    padding: 18px 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+.detail-block h4 {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 7px;
+    font-weight: 700;
+}
+.detail-block p { font-size: 0.88em; color: var(--text); line-height: 1.5; }
+.detail-block.full-width { grid-column: 1 / -1; }
+.remediation-box {
+    background: #fffbeb;
+    border: 1px solid #f6e05e;
+    border-left: 4px solid #d69e2e;
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 0.88em;
+    line-height: 1.5;
+    color: var(--text);
+}
+.detail-kv { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 6px; }
+.kv-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-size: 0.82em;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+.kv-key { color: var(--text-muted); }
+.kv-val { color: var(--text); font-weight: 600; }
+.iso-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.iso-tag {
+    background: #ebf4ff;
+    border: 1px solid #bee3f8;
+    color: #2b6cb0;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 600;
+}
+.iso-tag-domain {
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-left: 5px;
+    font-size: 0.9em;
+}
+
+/* Status & severity badges */
+.badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 12px;
+    font-size: 0.78em;
+    font-weight: 700;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+}
+.badge-compliant     { background: var(--compliant-bg);    color: var(--compliant-text);    border: 1px solid var(--compliant-border); }
+.badge-non-compliant { background: var(--noncompliant-bg); color: var(--noncompliant-text); border: 1px solid var(--noncompliant-border); }
+.badge-unknown       { background: var(--unknown-bg);      color: var(--unknown-text);      border: 1px solid var(--unknown-border); }
+.badge-critical { background: #fff5f5; color: var(--severity-critical); border: 1px solid #feb2b2; }
+.badge-high     { background: #fffaf0; color: var(--severity-high);     border: 1px solid #fbd38d; }
+.badge-medium   { background: #fffff0; color: var(--severity-medium);   border: 1px solid #faf089; }
+.badge-low      { background: #f0fff4; color: var(--severity-low);      border: 1px solid #9ae6b4; }
+
+/* Category chart */
+.category-bars { display: flex; flex-direction: column; gap: 11px; }
+.cat-row { display: flex; align-items: center; gap: 12px; }
+.cat-label { width: 200px; font-size: 0.84em; font-weight: 500; color: var(--text); flex-shrink: 0; }
+.cat-bar-wrap {
+    flex: 1;
+    background: var(--bg);
+    border-radius: 4px;
+    height: 22px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+.cat-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--compliant-border) 0%, #48bb78 100%);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    min-width: 0;
+    transition: width 0.4s ease;
+}
+.cat-bar-fill span { color: white; font-size: 0.76em; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+.cat-stats { width: 110px; font-size: 0.8em; color: var(--text-muted); flex-shrink: 0; text-align: right; }
+
+/* ISO table */
+.iso-table-wrap { overflow-x: auto; }
+.iso-table-wrap table { min-width: 600px; }
+
+/* Footer */
+footer { text-align: center; padding: 22px; color: var(--text-muted); font-size: 0.84em; margin-top: 4px; }
+
+/* Print */
+@media print {
+    body { background: white; font-size: 11px; }
+    .container { padding: 0; max-width: 100%; }
+    .filter-bar, .expand-btn { display: none !important; }
+    .detail-row { display: table-row !important; }
+    .detail-content { padding: 10px; }
+    header, .metadata-bar { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .section { box-shadow: none; border: 1px solid #e2e8f0; page-break-inside: avoid; }
+    .summary-grid { grid-template-columns: repeat(5, 1fr); }
+    .chart-card { display: none; }
+    @page { margin: 1.5cm; }
+}
+
+  </style>
+</head>
+<body>
+<div class="container">
+<header><span class="header-icon">&#128274;</span><div><h1>DockAudit-SCA</h1><p>CIS Docker Benchmark &amp; ISO/IEC 27001 Compliance Report</p></div></header>
+<div class="metadata-bar">
+  <span><strong>Target:</strong> Image: dockaudit-demo</span>
+  <span><strong>Generated:</strong> 2026-06-15 00:20:33</span>
+  <span><strong>Standard:</strong> CIS Docker Benchmark 1.6 &mdash; ISO/IEC 27001:2022</span>
+</div>
+
+<div class="summary-grid">
+  <div class="stat-card card-total">
+    <div class="stat-number">55</div>
+    <div class="stat-label">Total Controls</div>
+  </div>
+  <div class="stat-card card-compliant">
+    <div class="stat-number">10</div>
+    <div class="stat-label">Compliant</div>
+  </div>
+  <div class="stat-card card-noncompliant">
+    <div class="stat-number">35</div>
+    <div class="stat-label">Non-Compliant</div>
+  </div>
+  <div class="stat-card card-unknown">
+    <div class="stat-number">10</div>
+    <div class="stat-label">Unknown</div>
+  </div>
+  <div class="stat-card card-rate">
+    <div class="stat-number">18.2%</div>
+    <div class="stat-label">Compliance Rate</div>
+  </div>
+  <div class="chart-card">
+    <canvas id="complianceChart" width="230" height="190"></canvas>
+  </div>
+</div>
+
+
+<div class="filter-bar">
+  <label>Status</label>
+  <select id="filterStatus" onchange="applyFilters()">
+    <option value="">All</option>
+    <option value="compliant">Compliant</option>
+    <option value="non_compliant">Non-Compliant</option>
+    <option value="unknown">Unknown</option>
+  </select>
+  <label>Severity</label>
+  <select id="filterSeverity" onchange="applyFilters()">
+    <option value="">All</option>
+    <option value="critical">Critical</option>
+    <option value="high">High</option>
+    <option value="medium">Medium</option>
+    <option value="low">Low</option>
+  </select>
+  <label>Category</label>
+  <select id="filterCategory" onchange="applyFilters()">
+    <option value="">All</option>
+    <option value="Access Control">Access Control</option><option value="Auditing">Auditing</option><option value="Container Runtime">Container Runtime</option><option value="Hardening">Hardening</option><option value="Host Configuration">Host Configuration</option><option value="Image Security">Image Security</option><option value="Logging">Logging</option><option value="Networking">Networking</option><option value="Patch Management">Patch Management</option><option value="Registry Security">Registry Security</option><option value="Resource Controls">Resource Controls</option><option value="Runtime">Runtime</option><option value="Secrets Management">Secrets Management</option>
+  </select>
+  <input type="text" id="filterSearch" placeholder="Search controls..." oninput="applyFilters()">
+  <button class="btn-sm" onclick="expandAll()">Expand All</button>
+  <button class="btn-sm" onclick="collapseAll()">Collapse All</button>
+  <span class="filter-count">Showing <strong id="visibleCount">55</strong> of 55</span>
+</div>
+
+
+<div class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Compliance Findings</div>
+      <div class="section-subtitle">Click any row to expand details &mdash; description, remediation steps, technical evidence and ISO 27001 mapping</div>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:36px"></th>
+        <th style="width:88px">Control</th>
+        <th style="width:175px">Category</th>
+        <th>Title</th>
+        <th style="width:96px">Severity</th>
+        <th style="width:128px">Status</th>
+      </tr>
+    </thead>
+    <tbody id="findingsTableBody">
+      
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Host Configuration">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-1.1</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Host Configuration</span></td>
+  <td>Separar partición /var</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Crear una partición separada para /var en el host Docker.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Crear partición dedicada para /var durante instalación del sistema</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">/var is not on a separate partition</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.19<span class="iso-tag-domain">Asset Management &amp; Hardening</span></span><span class="iso-tag">A.8.20<span class="iso-tag-domain">Network Security</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Host Configuration">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-1.2</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Host Configuration</span></td>
+  <td>Separar partición /var/lib/docker</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Crear una partición separada para el directorio de datos de Docker.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Crear partición dedicada para /var/lib/docker</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">path:</span> <span class="kv-val">/var/lib/docker</span></span><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">/var/lib/docker is not on a separate partition</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.19<span class="iso-tag-domain">Asset Management &amp; Hardening</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Host Configuration">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-1.3</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Host Configuration</span></td>
+  <td>Separar partición /var/log</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Crear una partición separada para los logs.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Crear partición dedicada para /var/log</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">/var/log is not on a separate partition</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.19<span class="iso-tag-domain">Asset Management &amp; Hardening</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Host Configuration">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-1.4</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Host Configuration</span></td>
+  <td>Separar partición /var/log/audit</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Crear una partición separada para los logs de auditoría.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Crear partición dedicada para /var/log/audit</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">/var/log/audit is not on a separate partition</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.19<span class="iso-tag-domain">Asset Management &amp; Hardening</span></span><span class="iso-tag">A.8.15<span class="iso-tag-domain">Logging</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Host Configuration">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-1.5</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Host Configuration</span></td>
+  <td>Configurar parámetros restrictivos del kernel</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Aplicar parámetros de kernel restrictivos para mayor seguridad.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Configurar sysctl para parámetros de kernel restrictivos (net.ipv4.conf.all.forwarding, etc.)</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">No MAC module (AppArmor/SELinux) detected as active</span></span><span class="kv-item"><span class="kv-key">apparmor:</span> <span class="kv-val">False</span></span><span class="kv-item"><span class="kv-key">selinux_status:</span> <span class="kv-val">None</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.20<span class="iso-tag-domain">Network Security</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="unknown" data-severity="high" data-category="Host Configuration">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-1.6</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Host Configuration</span></td>
+  <td>Deshabilitar carga de módulos del kernel</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-unknown">Unknown</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Asegurar que la carga de módulos del kernel está controlada.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Configurar modprobe para deshabilitar módulos innecesarios</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Kernel module list not available</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.20<span class="iso-tag-domain">Network Security</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="unknown" data-severity="high" data-category="Host Configuration">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-2.3</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Host Configuration</span></td>
+  <td>Permisos del socket del daemon</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-unknown">Unknown</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Asegurar permisos restrictivos en /var/run/docker.sock.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Ajustar permisos a 660 y propiedad a root:docker</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Docker socket permissions unavailable</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.2<span class="iso-tag-domain">Access Control</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="unknown" data-severity="high" data-category="Host Configuration">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-2.4</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Host Configuration</span></td>
+  <td>Propiedad del socket del daemon</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-unknown">Unknown</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Asegurar que /var/run/docker.sock pertenece al usuario y grupo correctos.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">chown root:docker /var/run/docker.sock</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Docker socket ownership information unavailable</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.2<span class="iso-tag-domain">Access Control</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Host Configuration">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-2.5</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Host Configuration</span></td>
+  <td>Verificación de certificados del daemon</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Verificar certificados TLS configurados para el daemon.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Configurar TLS con certificados válidos para API del daemon</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">TLS certificate verification not configured for Docker daemon</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Configure tlsverify=true and provide TLS certificates</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.15<span class="iso-tag-domain">Logging/Operations</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Host Configuration">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-2.6</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Host Configuration</span></td>
+  <td>Habilitar TLS en el daemon</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Asegurar que el daemon exige TLS para conexiones remotas.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Configurar TLS y deshabilitar conexiones inseguras</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Docker daemon TLS not configured</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.15<span class="iso-tag-domain">Logging/Operations</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Host Configuration">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-2.7</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Host Configuration</span></td>
+  <td>Autenticación/Autorización del daemon</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Asegurar mecanismos de autenticación y autorización para la API del daemon.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Implementar autenticación y limitar accesos a la API</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">No authorization plugins configured for Docker daemon API</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Configure authorization plugins (e.g. OPA, authz-broker)</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.2<span class="iso-tag-domain">Access Control</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Registry Security">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-2.8</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Registry Security</span></td>
+  <td>Certificados de registro y comunicación</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Asegurar certificados para comunicación con registries privados.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Configurar certificados de confianza para registries</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">/etc/docker/certs.d does not exist — no custom registry certificates configured</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Create /etc/docker/certs.d/&lt;registry&gt;/ with CA certificates</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.24<span class="iso-tag-domain">Network Security</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="unknown" data-severity="high" data-category="Access Control">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-2.1</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Access Control</span></td>
+  <td>Ejecutar el daemon Docker en un grupo no-raíz</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-unknown">Unknown</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>El daemon Docker debe ejecutarse bajo un usuario no-root para limitar los daños potenciales por vulnerabilidades.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Crear usuario no-root, añadirlo al grupo docker, cambiar propiedad de /var/run/docker.sock</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Docker daemon process UID not available</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.2<span class="iso-tag-domain">Access Control</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Hardening">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-2.2</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Hardening</span></td>
+  <td>Separar el directorio de datos del daemon en una partición</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>El directorio de datos del daemon Docker debe estar en una partición separada.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Configurar daemon.json con data-root en partición separada</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">path:</span> <span class="kv-val">/var/lib/docker</span></span><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">/var/lib/docker is not on a separate partition</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.2<span class="iso-tag-domain">Access Control</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="unknown" data-severity="medium" data-category="Patch Management">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-2.9</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Patch Management</span></td>
+  <td>Mantener la versión correcta de Docker</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-unknown">Unknown</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Mantener Docker Engine actualizado con la última versión estable.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Actualizar Docker Engine a la última versión estable disponible</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Docker version not available in host info</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.15<span class="iso-tag-domain">Logging</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Networking">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-2.10</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Networking</span></td>
+  <td>Deshabilitar userland proxy</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Deshabilitar userland proxy para mejorar seguridad de networking.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Configurar daemon.json: &quot;userland-proxy&quot;: false</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">userland-proxy not disabled (Docker default: enabled)</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Add &quot;userland-proxy&quot;: false to daemon.json</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.24<span class="iso-tag-domain">Network Security</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Networking">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-2.11</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Networking</span></td>
+  <td>Deshabilitar inter-container communication (icc)</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Deshabilitar icc para prevenir comunicación no deseada entre contenedores.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Configurar daemon.json: &quot;icc&quot;: false</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Inter-container communication not disabled (Docker default: enabled)</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Add &quot;icc&quot;: false to daemon.json</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.24<span class="iso-tag-domain">Network Security</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Logging">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-2.12</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Logging</span></td>
+  <td>Configurar controlador de logs apropiado</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Configurar un driver de logs seguro y centralizado.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Configurar log-driver a syslog/journald o driver centralizado</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">No log driver configured (Docker default: json-file, local only)</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Configure &quot;log-driver&quot; in daemon.json for centralized logging</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.15<span class="iso-tag-domain">Logging</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="critical" data-category="Container Runtime">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-3.1</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Container Runtime</span></td>
+  <td>No usar --privileged con contenedores en producción</td>
+  <td><span class="badge badge-critical">CRITICAL</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Los contenedores no deben ejecutarse con el flag --privileged en producción.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Ejecutar contenedores sin --privileged, usar capacidades específicas con --cap-drop y --cap-add</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Privileged containers detected</span></span><span class="kv-item"><span class="kv-key">count:</span> <span class="kv-val">1</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;hopeful_lalande&#x27;]</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.1<span class="iso-tag-domain">Access Control</span></span><span class="iso-tag">A.8.19<span class="iso-tag-domain">Hardening</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Container Runtime">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-3.2</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Container Runtime</span></td>
+  <td>No usar --user=root</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Usar el flag --user para ejecutar contenedores con usuarios no-root.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Especificar USER en Dockerfile o usar --user en docker run</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers running as root</span></span><span class="kv-item"><span class="kv-key">count:</span> <span class="kv-val">4</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.1<span class="iso-tag-domain">Access Control</span></span><span class="iso-tag">A.8.3<span class="iso-tag-domain">Privileged Access</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Container Runtime">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-3.3</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Container Runtime</span></td>
+  <td>Usar capacidades Linux restrictivas</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Remover capabilities innecesarias y mantener solo las requeridas.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Usar --cap-drop ALL y luego --cap-add solo para capabilities necesarias</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without capability restrictions</span></span><span class="kv-item"><span class="kv-key">count:</span> <span class="kv-val">6</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;secure-nginx&#x27;, &#x27;juice&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Use --cap-drop=ALL and add only necessary capabilities</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.3<span class="iso-tag-domain">Privileged Access</span></span><span class="iso-tag">A.8.19<span class="iso-tag-domain">Hardening</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="compliant" data-severity="medium" data-category="Container Runtime">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-3.4</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Container Runtime</span></td>
+  <td>Montar /etc/shadow como read-only</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-compliant">Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Los archivos sensibles como /etc/shadow deben montarse como read-only.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Montar con -v /etc/shadow:/etc/shadow:ro</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Sensitive files mounted read-only or not mounted</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.1<span class="iso-tag-domain">Access Control</span></span><span class="iso-tag">A.8.19<span class="iso-tag-domain">Hardening</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="unknown" data-severity="high" data-category="Host Configuration">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-3.5</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Host Configuration</span></td>
+  <td>Permisos de archivos de configuración del daemon</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-unknown">Unknown</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Asegurar permisos restrictivos en archivos de configuración del daemon Docker.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Ajustar permisos de archivos de configuración a 600/640</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">daemon.json does not exist — no permissions to check</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.1<span class="iso-tag-domain">Access Control</span></span><span class="iso-tag">A.8.19<span class="iso-tag-domain">Hardening</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="unknown" data-severity="high" data-category="Host Configuration">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-3.6</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Host Configuration</span></td>
+  <td>Propiedad de archivos de configuración del daemon</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-unknown">Unknown</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Asegurar que los archivos de configuración pertenecen a root y grupo apropiado.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Ajustar propiedad de archivos de configuración a root:root o root:docker</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">daemon.json does not exist — no ownership to check</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.1<span class="iso-tag-domain">Access Control</span></span><span class="iso-tag">A.8.19<span class="iso-tag-domain">Hardening</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Image Security">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-4.1</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
+  <td>Crear y usar imágenes personalizadas</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Crear imágenes Docker personalizadas en lugar de usar imágenes genéricas.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Crear Dockerfile personalizado con base images de confianza</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">No custom images detected — only official/generic images in use</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.19<span class="iso-tag-domain">Hardening</span></span><span class="iso-tag">A.8.25<span class="iso-tag-domain">Secure Development</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Image Security">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-4.2</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
+  <td>Verificar integridad de imágenes</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Verificar la integridad de imágenes Docker usando firmas digitales.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Habilitar Docker Content Trust y verificar firmas de imágenes</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Docker Content Trust (DCT) not detected</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Set DOCKER_CONTENT_TRUST=1 and enable image signing</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.19<span class="iso-tag-domain">Hardening</span></span><span class="iso-tag">A.8.25<span class="iso-tag-domain">Secure Development</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="compliant" data-severity="medium" data-category="Image Security">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-4.3</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
+  <td>Instalar solo paquetes necesarios</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-compliant">Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Minimizar la superficie de ataque instalando solo paquetes esenciales.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Usar imágenes base mínimas (alpine, distroless) y remover herramientas de build</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Images appear minimal (≤100 packages)</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.8<span class="iso-tag-domain">Vulnerability Management</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="compliant" data-severity="high" data-category="Image Security">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-4.4</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
+  <td>Usar imágenes base de confianza</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-compliant">Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Usar solo imágenes base de registros confiables y verificadas.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Usar imágenes oficiales o de registros privados verificados</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">All images from trusted registries</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.19<span class="iso-tag-domain">Hardening</span></span><span class="iso-tag">A.8.25<span class="iso-tag-domain">Secure Development</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="compliant" data-severity="high" data-category="Image Security">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-4.7</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
+  <td>Remover SETUID y SETGID en imágenes</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-compliant">Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Remover binarios con bit SETUID/SETGID innecesarios.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Usar &#x27;find / -perm /6000 -exec chmod a-s {} +&#x27; en Dockerfile</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">No SETUID/SETGID binaries found</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.8<span class="iso-tag-domain">Vulnerability Management</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="compliant" data-severity="high" data-category="Container Runtime">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-4.10</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Container Runtime</span></td>
+  <td>No usar bind mount de volúmenes sensibles</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-compliant">Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>No montar volúmenes que contengan datos sensibles del host.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Evitar montar directorios como / o /etc directamente</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">No sensitive host bind mounts detected</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.1<span class="iso-tag-domain">Access Control</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="critical" data-category="Image Security">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-4.5</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
+  <td>No incluir secretos en las imágenes</td>
+  <td><span class="badge badge-critical">CRITICAL</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Asegurarse de que las imágenes no contengan secretos hardcodeados.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Remover secretos y usar herramientas de secret scanning antes del push</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Sensitive environment variables detected in image configuration</span></span><span class="kv-item"><span class="kv-key">findings:</span> <span class="kv-val">[{&#x27;image&#x27;: &#x27;dockaudit-demo:latest&#x27;, &#x27;env_var&#x27;: &#x27;DB_PASSWORD&#x27;}, {&#x27;image&#x27;: &#x27;dockaudit-demo:latest&#x27;, &#x27;env_var&#x27;: &#x27;API_KEY&#x27;}, {&#x27;image&#x27;: &#x27;dockaudit-demo:latest&#x27;, &#x27;env_var&#x27;: &#x27;SECRET_TOKEN&#x27;}]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Remove secrets from image ENV instructions and use runtime secrets</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.19<span class="iso-tag-domain">Hardening</span></span><span class="iso-tag">A.8.8<span class="iso-tag-domain">Vulnerability Management</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Image Security">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-4.6</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
+  <td>No usar credenciales en variables de entorno dentro de imagen</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Evitar variables de entorno con credenciales en las imágenes.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Eliminar env sensibles y usar runtime secrets</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Image ENV instructions contain credentials or sensitive keys</span></span><span class="kv-item"><span class="kv-key">findings:</span> <span class="kv-val">[{&#x27;image&#x27;: &#x27;dockaudit-demo:latest&#x27;, &#x27;env_var&#x27;: &#x27;DB_PASSWORD&#x27;}, {&#x27;image&#x27;: &#x27;dockaudit-demo:latest&#x27;, &#x27;env_var&#x27;: &#x27;API_KEY&#x27;}, {&#x27;image&#x27;: &#x27;dockaudit-demo:latest&#x27;, &#x27;env_var&#x27;: &#x27;SECRET_TOKEN&#x27;}]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Use build args or runtime secrets instead of ENV for credentials</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.19<span class="iso-tag-domain">Hardening</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Image Security">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-4.8</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
+  <td>Definir healthchecks en Dockerfile</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Incluir instrucciones HEALTHCHECK para garantizar disponibilidad y detectar fallos.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Agregar HEALTHCHECK en Dockerfile</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Images without HEALTHCHECK instructions</span></span><span class="kv-item"><span class="kv-key">images:</span> <span class="kv-val">[&#x27;dockaudit-demo:latest&#x27;]</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.15<span class="iso-tag-domain">Logging</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Resource Controls">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-4.9</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Resource Controls</span></td>
+  <td>Limitar PIDs cgroup</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Establecer límites de PIDs por contenedor para evitar fork bombs.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Usar --pids-limit al iniciar contenedores</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without PID limits (fork bomb risk)</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;secure-nginx&#x27;, &#x27;juice&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Use --pids-limit to restrict the number of processes</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.12.6.1<span class="iso-tag-domain">Operations Security</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Hardening">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-5.1</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Hardening</span></td>
+  <td>Verificar las políticas de AppArmor</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Usar AppArmor o SELinux para controlar el acceso de contenedores.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Habilitar AppArmor/SELinux en el host y crear políticas restrictivas</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">No AppArmor or SELinux enforcement detected</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.3<span class="iso-tag-domain">Privileged Access</span></span><span class="iso-tag">A.8.22<span class="iso-tag-domain">Container Security</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Container Runtime">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-5.2</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Container Runtime</span></td>
+  <td>Usar Seccomp para restringir syscalls</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Aplicar perfiles Seccomp para limitar system calls disponibles.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Usar --security-opt seccomp=/path/to/profile.json</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without a custom Seccomp profile</span></span><span class="kv-item"><span class="kv-key">count:</span> <span class="kv-val">6</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;secure-nginx&#x27;, &#x27;juice&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Use --security-opt seccomp=/path/to/profile.json</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.3<span class="iso-tag-domain">Privileged Access</span></span><span class="iso-tag">A.8.22<span class="iso-tag-domain">Container Security</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="unknown" data-severity="high" data-category="Hardening">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-5.3</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Hardening</span></td>
+  <td>Usar SELinux para limitar contenedores</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-unknown">Unknown</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Configurar SELinux labels para restricciones adicionales.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Usar --security-opt label=type:svirt_sandbox_file_t</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">SELinux status not available (may not be installed)</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.3<span class="iso-tag-domain">Privileged Access</span></span><span class="iso-tag">A.8.22<span class="iso-tag-domain">Container Security</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="compliant" data-severity="critical" data-category="Container Runtime">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-5.5</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Container Runtime</span></td>
+  <td>No deshabilitar la actualización de restricciones</td>
+  <td><span class="badge badge-critical">CRITICAL</span></td>
+  <td><span class="badge badge-compliant">Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>No usar --security-opt=&#x27;apparmor=unconfined&#x27;.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">No usar flags que deshabiliten AppArmor/SELinux</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">AppArmor not disabled in any container</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.3<span class="iso-tag-domain">Privileged Access</span></span><span class="iso-tag">A.8.22<span class="iso-tag-domain">Container Security</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Networking">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-5.4</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Networking</span></td>
+  <td>Restringir tráfico entre contenedores</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Aplicar políticas de red para restringir el tráfico entre contenedores cuando no sea necesario.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Configurar políticas de red (NetworkPolicies, iptables) para restringir comunicación</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Inter-container communication is enabled (icc default: true)</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Set &quot;icc&quot;: false in daemon.json to restrict container traffic</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.22<span class="iso-tag-domain">Container Security</span></span><span class="iso-tag">A.8.3<span class="iso-tag-domain">Privileged Access</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="compliant" data-severity="low" data-category="Runtime">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-5.6</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Runtime</span></td>
+  <td>Configurar políticas de reinicio apropiadas</td>
+  <td><span class="badge badge-low">LOW</span></td>
+  <td><span class="badge badge-compliant">Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Evitar configuraciones de reinicio que oculten fallos repetidos.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Usar restart policies que no oculten bucles de reinicio</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Restart policies are acceptable</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.22<span class="iso-tag-domain">Container Security</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Resource Controls">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-5.7</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Resource Controls</span></td>
+  <td>Limitar uso de CPU</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Establecer límites de CPU para contenedores para prevenir agotamiento de recursos.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Configurar --cpus o CPU shares apropiados</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without CPU limits</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;secure-nginx&#x27;, &#x27;juice&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.22<span class="iso-tag-domain">Container Security</span></span><span class="iso-tag">A.8.3<span class="iso-tag-domain">Privileged Access</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Resource Controls">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-5.8</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Resource Controls</span></td>
+  <td>Limitar memoria de contenedores</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Establecer límites de memoria para cada contenedor.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Configurar --memory y --memory-swap para contenedores críticos</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without memory limits</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;secure-nginx&#x27;, &#x27;juice&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.1<span class="iso-tag-domain">Access Control</span></span><span class="iso-tag">A.8.22<span class="iso-tag-domain">Container Security</span></span><span class="iso-tag">A.8.3<span class="iso-tag-domain">Privileged Access</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Runtime">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-5.9</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Runtime</span></td>
+  <td>Sistema de archivos raíz en solo lectura</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Montar el sistema de archivos raíz del contenedor como read-only cuando sea posible.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Usar --read-only para contenedores que no requieren escritura</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers with writable root filesystem</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;secure-nginx&#x27;, &#x27;juice&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Use --read-only for containers that do not require write access</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.3<span class="iso-tag-domain">Privileged Access</span></span><span class="iso-tag">A.8.22<span class="iso-tag-domain">Container Security</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Runtime">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-5.10</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Runtime</span></td>
+  <td>Verificar permisos de volúmenes montados</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Asegurarse de que los volúmenes montados no introduzcan permisos inseguros.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Revisar y ajustar permisos de volúmenes montados</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Writable bind mounts detected</span></span><span class="kv-item"><span class="kv-key">volumes:</span> <span class="kv-val">[{&#x27;container&#x27;: &#x27;hopeful_lalande&#x27;, &#x27;mount&#x27;: &#x27;/mnt&#x27;}]</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.22<span class="iso-tag-domain">Container Security</span></span><span class="iso-tag">A.8.3<span class="iso-tag-domain">Privileged Access</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="low" data-category="Resource Controls">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-5.11</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Resource Controls</span></td>
+  <td>Configurar CPU shares</td>
+  <td><span class="badge badge-low">LOW</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Establecer CPU shares para evitar que un contenedor consuma todos los recursos.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Establecer --cpu-shares apropiado</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Containers without CPU shares configured</span></span><span class="kv-item"><span class="kv-key">containers:</span> <span class="kv-val">[&#x27;secure-nginx&#x27;, &#x27;juice&#x27;, &#x27;hopeful_lalande&#x27;, &#x27;dvwa&#x27;, &#x27;stoic_kowalevski&#x27;, &#x27;relaxed_heisenberg&#x27;]</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.22<span class="iso-tag-domain">Container Security</span></span><span class="iso-tag">A.8.3<span class="iso-tag-domain">Privileged Access</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Image Security">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-6.2</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
+  <td>Escanear imágenes en busca de vulnerabilidades</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Escanear imágenes con herramientas de análisis de vulnerabilidades.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Usar herramientas como Trivy, Clair o escaneo nativo de registros</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Critical vulnerabilities found</span></span><span class="kv-item"><span class="kv-key">critical:</span> <span class="kv-val">8</span></span><span class="kv-item"><span class="kv-key">high:</span> <span class="kv-val">13</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.8<span class="iso-tag-domain">Vulnerability Management</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="compliant" data-severity="high" data-category="Image Security">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-6.3</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Image Security</span></td>
+  <td>Permitir solo imágenes confiables</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-compliant">Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Implementar políticas para permitir solo imágenes verificadas.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Implementar admission controller o policy como OPA/Gatekeeper</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">All images are from trusted registries</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.1<span class="iso-tag-domain">Access Control</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="compliant" data-severity="high" data-category="Registry Security">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-6.1</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Registry Security</span></td>
+  <td>Restringir registries usados</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-compliant">Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Limitar registries permitidos y bloquear registries inseguros.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Implementar whitelist de registries y controlar pull/push</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">All scanned images are from allowed registries</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.2<span class="iso-tag-domain">Access Control</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="unknown" data-severity="high" data-category="Secrets Management">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-6.4</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Secrets Management</span></td>
+  <td>Cifrado de secretos en repositorios</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-unknown">Unknown</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Asegurar que los secretos están cifrados cuando son almacenados.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Usar vault o servicios gestionados para almacenar secretos</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Docker Swarm not active — secrets encryption is Swarm-specific</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.3<span class="iso-tag-domain">Privileged Access</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="unknown" data-severity="critical" data-category="Host Configuration">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-6.5</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Host Configuration</span></td>
+  <td>Propiedad segura de docker.sock</td>
+  <td><span class="badge badge-critical">CRITICAL</span></td>
+  <td><span class="badge badge-unknown">Unknown</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Asegurar propiedad y permisos correctos de docker.sock para evitar escalada.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Ajustar propietario y permisos de /var/run/docker.sock</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Docker socket information unavailable</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.19<span class="iso-tag-domain">Hardening</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Secrets Management">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-6.6</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Secrets Management</span></td>
+  <td>Rotación de secretos</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Implementar rotación periódica de secretos en pipelines y plataformas.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Configurar rotación automática de secretos</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">No automated secret rotation policy can be verified</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Implement a secrets rotation schedule using vault or CI/CD pipelines</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.3<span class="iso-tag-domain">Privileged Access</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="compliant" data-severity="high" data-category="Registry Security">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-6.7</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Registry Security</span></td>
+  <td>Autenticación para pull/push</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-compliant">Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Asegurar autenticación fuerte para actividades pull/push en registries.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Forzar autenticación y revisar tokens de acceso</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">reason:</span> <span class="kv-val">Docker credentials configured</span></span><span class="kv-item"><span class="kv-key">config_path:</span> <span class="kv-val">/home/jgv/.docker/config.json</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.2<span class="iso-tag-domain">Access Control</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Auditing">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-6.8</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Auditing</span></td>
+  <td>Habilitar logging de auditoría</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Registrar eventos relevantes de imágenes y pulls/pushes para auditoría.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Habilitar y centralizar logs de auditoría</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">Audit log directory (/var/log/audit) not found; auditd process is not running</span></span><span class="kv-item"><span class="kv-key">audit_log_enabled:</span> <span class="kv-val">False</span></span><span class="kv-item"><span class="kv-key">auditd_running:</span> <span class="kv-val">False</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.15<span class="iso-tag-domain">Logging</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="medium" data-category="Auditing">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-6.9</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Auditing</span></td>
+  <td>Verificar logs de auditoría</td>
+  <td><span class="badge badge-medium">MEDIUM</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Corroborar que los logs de auditoría son revisados y almacenados.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Establecer procesos de revisión de logs</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">No audit rules file at /etc/audit/audit.rules; Audit log directory not found</span></span><span class="kv-item"><span class="kv-key">audit_rules_present:</span> <span class="kv-val">False</span></span><span class="kv-item"><span class="kv-key">audit_log_enabled:</span> <span class="kv-val">False</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.15<span class="iso-tag-domain">Logging</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+
+<tr class="finding-row" data-status="non_compliant" data-severity="high" data-category="Auditing">
+  <td><button class="expand-btn" onclick="toggleRow(this, event)" title="Toggle details">&#9656;</button></td>
+  <td><strong>CIS-6.10</strong></td>
+  <td><span style="font-size:0.82em;color:var(--text-muted)">Auditing</span></td>
+  <td>Auditoría del daemon</td>
+  <td><span class="badge badge-high">HIGH</span></td>
+  <td><span class="badge badge-non-compliant">Non Compliant</span></td>
+</tr>
+<tr class="detail-row" style="display:none">
+  <td colspan="6">
+    <div class="detail-content">
+      <div class="detail-block">
+        <h4>Description</h4>
+        <p>Asegurar que el daemon y eventos de contenedores son auditados.</p>
+      </div>
+      <div class="detail-block">
+        <h4>Remediation</h4>
+        <div class="remediation-box">Configurar auditd y registrar llamadas relevantes</div>
+      </div>
+      <div class="detail-block">
+        <h4>Technical Evidence</h4>
+        <div class="detail-kv"><span class="kv-item"><span class="kv-key">issue:</span> <span class="kv-val">auditd is not running — Docker daemon events are not being audited</span></span><span class="kv-item"><span class="kv-key">auditd_running:</span> <span class="kv-val">False</span></span><span class="kv-item"><span class="kv-key">recommendation:</span> <span class="kv-val">Install and configure auditd with Docker-specific rules</span></span></div>
+      </div>
+      <div class="detail-block">
+        <h4>ISO/IEC 27001 Controls</h4>
+        <div class="iso-tags"><span class="iso-tag">A.8.15<span class="iso-tag-domain">Logging</span></span></div>
+      </div>
+    </div>
+  </td>
+</tr>
+    </tbody>
+  </table>
+</div>
+
+
+<div class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-title">Compliance by CIS Section</div>
+      <div class="section-subtitle">Proportion of compliant controls per benchmark section</div>
+    </div>
+  </div>
+  <div class="category-bars">
+  <div class="cat-row">
+    <div class="cat-label">Access Control</div>
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-fill" style="width:0.0%"></div>
+    </div>
+    <div class="cat-stats">0/1 compliant</div>
+  </div>
+  <div class="cat-row">
+    <div class="cat-label">Auditing</div>
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-fill" style="width:0.0%"></div>
+    </div>
+    <div class="cat-stats">0/3 compliant</div>
+  </div>
+  <div class="cat-row">
+    <div class="cat-label">Container Runtime</div>
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-fill" style="width:42.9%"><span>43%</span></div>
+    </div>
+    <div class="cat-stats">3/7 compliant</div>
+  </div>
+  <div class="cat-row">
+    <div class="cat-label">Hardening</div>
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-fill" style="width:0.0%"></div>
+    </div>
+    <div class="cat-stats">0/3 compliant</div>
+  </div>
+  <div class="cat-row">
+    <div class="cat-label">Host Configuration</div>
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-fill" style="width:0.0%"></div>
+    </div>
+    <div class="cat-stats">0/14 compliant</div>
+  </div>
+  <div class="cat-row">
+    <div class="cat-label">Image Security</div>
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-fill" style="width:40.0%"><span>40%</span></div>
+    </div>
+    <div class="cat-stats">4/10 compliant</div>
+  </div>
+  <div class="cat-row">
+    <div class="cat-label">Logging</div>
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-fill" style="width:0.0%"></div>
+    </div>
+    <div class="cat-stats">0/1 compliant</div>
+  </div>
+  <div class="cat-row">
+    <div class="cat-label">Networking</div>
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-fill" style="width:0.0%"></div>
+    </div>
+    <div class="cat-stats">0/3 compliant</div>
+  </div>
+  <div class="cat-row">
+    <div class="cat-label">Patch Management</div>
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-fill" style="width:0.0%"></div>
+    </div>
+    <div class="cat-stats">0/1 compliant</div>
+  </div>
+  <div class="cat-row">
+    <div class="cat-label">Registry Security</div>
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-fill" style="width:66.7%"><span>67%</span></div>
+    </div>
+    <div class="cat-stats">2/3 compliant</div>
+  </div>
+  <div class="cat-row">
+    <div class="cat-label">Resource Controls</div>
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-fill" style="width:0.0%"></div>
+    </div>
+    <div class="cat-stats">0/4 compliant</div>
+  </div>
+  <div class="cat-row">
+    <div class="cat-label">Runtime</div>
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-fill" style="width:33.3%"><span>33%</span></div>
+    </div>
+    <div class="cat-stats">1/3 compliant</div>
+  </div>
+  <div class="cat-row">
+    <div class="cat-label">Secrets Management</div>
+    <div class="cat-bar-wrap">
+      <div class="cat-bar-fill" style="width:0.0%"></div>
+    </div>
+    <div class="cat-stats">0/2 compliant</div>
+  </div>
+  </div>
+</div>
+
+
+<div class="section">
+  <div class="section-header">
+    <div>
+      <div class="section-title">ISO/IEC 27001:2022 Coverage</div>
+      <div class="section-subtitle">Annex A control compliance derived from CIS Docker Benchmark mapping</div>
+    </div>
+  </div>
+  <div class="iso-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Domain</th>
+          <th style="text-align:center">Compliant</th>
+          <th style="text-align:center">Non-Compliant</th>
+          <th style="text-align:center">Unknown</th>
+          <th style="text-align:center">Coverage</th>
+        </tr>
+      </thead>
+      <tbody>
+  <tr>
+    <td>
+      <strong>Access Control</strong><br>
+      <span style="font-size:0.8em;color:var(--text-muted)">A.8.1, A.8.2</span>
+    </td>
+    <td style="text-align:center"><span class="badge badge-compliant">5</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">5</span></td>
+    <td style="text-align:center"><span class="badge badge-unknown">5</span></td>
+    <td style="text-align:center;font-weight:600">33.3%</td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Asset Management &amp; Hardening</strong><br>
+      <span style="font-size:0.8em;color:var(--text-muted)">A.8.19</span>
+    </td>
+    <td style="text-align:center"><span class="badge badge-compliant">0</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">4</span></td>
+    <td style="text-align:center"><span class="badge badge-unknown">0</span></td>
+    <td style="text-align:center;font-weight:600">0.0%</td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Container Security</strong><br>
+      <span style="font-size:0.8em;color:var(--text-muted)">A.8.22</span>
+    </td>
+    <td style="text-align:center"><span class="badge badge-compliant">2</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">8</span></td>
+    <td style="text-align:center"><span class="badge badge-unknown">1</span></td>
+    <td style="text-align:center;font-weight:600">18.2%</td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Hardening</strong><br>
+      <span style="font-size:0.8em;color:var(--text-muted)">A.8.19</span>
+    </td>
+    <td style="text-align:center"><span class="badge badge-compliant">2</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">6</span></td>
+    <td style="text-align:center"><span class="badge badge-unknown">3</span></td>
+    <td style="text-align:center;font-weight:600">18.2%</td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Logging</strong><br>
+      <span style="font-size:0.8em;color:var(--text-muted)">A.8.15</span>
+    </td>
+    <td style="text-align:center"><span class="badge badge-compliant">0</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">6</span></td>
+    <td style="text-align:center"><span class="badge badge-unknown">1</span></td>
+    <td style="text-align:center;font-weight:600">0.0%</td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Logging/Operations</strong><br>
+      <span style="font-size:0.8em;color:var(--text-muted)">A.8.15</span>
+    </td>
+    <td style="text-align:center"><span class="badge badge-compliant">0</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">2</span></td>
+    <td style="text-align:center"><span class="badge badge-unknown">0</span></td>
+    <td style="text-align:center;font-weight:600">0.0%</td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Network Security</strong><br>
+      <span style="font-size:0.8em;color:var(--text-muted)">A.8.20, A.8.24</span>
+    </td>
+    <td style="text-align:center"><span class="badge badge-compliant">0</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">5</span></td>
+    <td style="text-align:center"><span class="badge badge-unknown">1</span></td>
+    <td style="text-align:center;font-weight:600">0.0%</td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Operations Security</strong><br>
+      <span style="font-size:0.8em;color:var(--text-muted)">A.12.6.1</span>
+    </td>
+    <td style="text-align:center"><span class="badge badge-compliant">0</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">1</span></td>
+    <td style="text-align:center"><span class="badge badge-unknown">0</span></td>
+    <td style="text-align:center;font-weight:600">0.0%</td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Privileged Access</strong><br>
+      <span style="font-size:0.8em;color:var(--text-muted)">A.8.3</span>
+    </td>
+    <td style="text-align:center"><span class="badge badge-compliant">1</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">11</span></td>
+    <td style="text-align:center"><span class="badge badge-unknown">2</span></td>
+    <td style="text-align:center;font-weight:600">7.1%</td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Secure Development</strong><br>
+      <span style="font-size:0.8em;color:var(--text-muted)">A.8.25</span>
+    </td>
+    <td style="text-align:center"><span class="badge badge-compliant">1</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">2</span></td>
+    <td style="text-align:center"><span class="badge badge-unknown">0</span></td>
+    <td style="text-align:center;font-weight:600">33.3%</td>
+  </tr>
+  <tr>
+    <td>
+      <strong>Vulnerability Management</strong><br>
+      <span style="font-size:0.8em;color:var(--text-muted)">A.8.8</span>
+    </td>
+    <td style="text-align:center"><span class="badge badge-compliant">2</span></td>
+    <td style="text-align:center"><span class="badge badge-non-compliant">2</span></td>
+    <td style="text-align:center"><span class="badge badge-unknown">0</span></td>
+    <td style="text-align:center;font-weight:600">50.0%</td>
+  </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  <p>Generated by <strong>DockAudit-SCA</strong> &mdash; Security Audit &amp; Compliance Tool</p>
+</footer>
+</div>
+<script>
+
+(function() {
+    var ctx = document.getElementById('complianceChart');
+    if (!ctx || typeof Chart === 'undefined') return;
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Compliant', 'Non-Compliant', 'Unknown'],
+            datasets: [{
+                data: [10, 35, 10],
+                backgroundColor: ['#c6f6d5', '#fed7d7', '#feebc8'],
+                borderColor: ['#276749', '#c53030', '#c05621'],
+                borderWidth: 2,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { padding: 10, font: { size: 11 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            var pct = (ctx.raw / 55 * 100).toFixed(1);
+                            return ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
+                        }
+                    }
+                }
+            },
+            cutout: '65%'
+        }
+    });
+})();
+
+function toggleRow(btn, event) {
+    if (event) event.stopPropagation();
+    var row = btn.closest('tr');
+    var detail = row.nextElementSibling;
+    if (!detail || !detail.classList.contains('detail-row')) return;
+    var hidden = detail.style.display === 'none' || detail.style.display === '';
+    detail.style.display = hidden ? 'table-row' : 'none';
+    btn.innerHTML = hidden ? '&#9662;' : '&#9656;';
+    btn.classList.toggle('expanded', hidden);
+}
+
+document.querySelectorAll('tr.finding-row').forEach(function(row) {
+    row.addEventListener('click', function(e) {
+        if (e.target.classList.contains('expand-btn') || e.target.closest('.expand-btn')) return;
+        var btn = row.querySelector('.expand-btn');
+        if (btn) toggleRow(btn, null);
+    });
+});
+
+function applyFilters() {
+    var status   = document.getElementById('filterStatus').value;
+    var severity = document.getElementById('filterSeverity').value;
+    var category = document.getElementById('filterCategory').value;
+    var search   = document.getElementById('filterSearch').value.toLowerCase();
+    var visible  = 0;
+    document.querySelectorAll('tr.finding-row').forEach(function(row) {
+        var show = (
+            (!status   || row.dataset.status   === status)   &&
+            (!severity || row.dataset.severity === severity) &&
+            (!category || row.dataset.category === category) &&
+            (!search   || row.textContent.toLowerCase().includes(search))
+        );
+        row.style.display = show ? '' : 'none';
+        var detail = row.nextElementSibling;
+        if (detail && detail.classList.contains('detail-row') && !show) {
+            detail.style.display = 'none';
+        }
+        if (show) visible++;
+    });
+    document.getElementById('visibleCount').textContent = visible;
+}
+
+function expandAll() {
+    document.querySelectorAll('tr.finding-row').forEach(function(row) {
+        if (row.style.display === 'none') return;
+        var detail = row.nextElementSibling;
+        if (detail && detail.classList.contains('detail-row')) detail.style.display = 'table-row';
+        var btn = row.querySelector('.expand-btn');
+        if (btn) { btn.innerHTML = '&#9662;'; btn.classList.add('expanded'); }
+    });
+}
+
+function collapseAll() {
+    document.querySelectorAll('tr.detail-row').forEach(function(r) { r.style.display = 'none'; });
+    document.querySelectorAll('.expand-btn').forEach(function(b) {
+        b.innerHTML = '&#9656;';
+        b.classList.remove('expanded');
+    });
+}
+
+</script>
+</body>
+</html>
