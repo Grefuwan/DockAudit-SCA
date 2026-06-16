@@ -1,23 +1,20 @@
 # DockAudit-SCA
 
-Security auditing tool for Docker environments with integrated Software Composition Analysis (SCA) and SBOM generation.
+Prototipo funcional de herramienta de auditoría de seguridad para entornos Docker con análisis de composición software (SCA) integrado y generación de SBOM.
 
 ## Objetivos
 
-### 1.2.1. Objetivo general
+**Objetivo general:** Desarrollar un prototipo funcional de herramienta de auditoría de seguridad para entornos Docker que permita analizar configuraciones, dependencias software y binarios presentes en imágenes de contenedor, con el fin de identificar vulnerabilidades y proponer medidas de mitigación.
 
-Desarrollar un sistema de auditoría de seguridad para entornos Docker que permita analizar configuraciones, dependencias software y binarios presentes en imágenes de contenedor, con el fin de identificar vulnerabilidades y proponer medidas de mitigación.
+**Objetivos específicos:**
 
-### 1.2.2. Objetivos específicos
-
-- Analizar la arquitectura de seguridad de Docker y los mecanismos de aislamiento utilizados en entornos de contenedores.
-- Diseñar la arquitectura de un sistema de auditoría orientado al análisis de seguridad de contenedores e imágenes Docker.
-- Implementar un sistema de análisis de composición software (Software Composition Analysis, SCA) capaz de identificar dependencias y componentes incluidos en imágenes de contenedor.
-- Generar un Software Bill of Materials (SBOM) que describa los componentes software presentes en las imágenes analizadas.
-- Realizar análisis de binarios presentes en imágenes de contenedor para detectar posibles vulnerabilidades o configuraciones inseguras.
-- Evaluar configuraciones de seguridad del entorno Docker, incluyendo privilegios de contenedores, capacidades del kernel, políticas de aislamiento y configuraciones de red.
-- Diseñar un sistema de evaluación de riesgos que permita clasificar los hallazgos de seguridad según su criticidad.
-- Proponer medidas de hardening y buenas prácticas de seguridad para mejorar la protección de entornos Docker.
+- Analizar la configuración de seguridad del host Docker y del daemon.
+- Inspeccionar contenedores e imágenes Docker para identificar configuraciones inseguras.
+- Extraer dependencias y paquetes software presentes en imágenes Docker.
+- Generar SBOMs en formato CycloneDX 1.4 con identificadores purl estándar.
+- Correlacionar dependencias y componentes con vulnerabilidades CVE conocidas mediante feeds NVD descargados localmente.
+- Mapear hallazgos al CIS Docker Benchmark 1.6 e ISO/IEC 27001:2022.
+- Producir informes estructurados en HTML y JSON.
 
 ## Features
 

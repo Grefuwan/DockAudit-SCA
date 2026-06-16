@@ -24,7 +24,7 @@
 
 ## 1. Descripción general
 
-DockAudit-SCA es una herramienta de auditoría de seguridad para entornos Docker desarrollada como Trabajo Fin de Máster. Analiza tres capas del entorno:
+DockAudit-SCA es un prototipo funcional de herramienta de auditoría de seguridad para entornos Docker, desarrollado como Trabajo Fin de Máster. Analiza tres capas del entorno:
 
 - **Host Docker**: configuración del daemon, permisos, políticas de seguridad del sistema.
 - **Contenedores**: configuración de ejecución (modo privilegiado, capacidades del kernel, volúmenes, red).
@@ -79,7 +79,7 @@ pip install -r requirements.txt
 ### Sintaxis
 
 ```
-python main.py [opciones]
+python3 main.py [opciones]
 ```
 
 ### Opciones disponibles
@@ -99,31 +99,31 @@ python main.py [opciones]
 
 ```bash
 # Auditoría completa del host y todos los contenedores e imágenes locales
-python main.py
+python3 main.py
 
 # Auditar un contenedor específico (filtra también su imagen)
-python main.py --container dvwa
+python3 main.py --container dvwa
 
 # Auditar una imagen pulleada pero sin contenedor desplegado
-python main.py --image nginx:latest
+python3 main.py --image nginx:latest
 
 # Auditoría con el feed de demo incluido (15 CVEs reales)
-python main.py --nvd-feed sample_nvd.json
+python3 main.py --nvd-feed sample_nvd.json
 
 # Auditoría con feed NVD completo descargado
-python main.py --nvd-feed feeds/nvdcve-2.0-2024.json
+python3 main.py --nvd-feed feeds/nvdcve-2.0-2024.json
 
 # Auditoría filtrando hallazgos de severidad alta o crítica
-python main.py --severity high
+python3 main.py --severity high
 
 # Auditoría con salida en JSON
-python main.py --output json
+python3 main.py --output json
 
 # Solo imágenes/contenedores, sin auditoría del host
-python main.py --skip-host --image nginx:latest
+python3 main.py --skip-host --image nginx:latest
 
 # Integración CI/CD: falla (exit 2) si hay hallazgos high o critical
-python main.py --nvd-feed feeds/nvdcve-2.0-2024.json --fail-on high
+python3 main.py --nvd-feed feeds/nvdcve-2.0-2024.json --fail-on high
 ```
 
 ### Códigos de salida
@@ -488,8 +488,8 @@ El repositorio incluye `sample_nvd.json`, un feed en **formato NVD API 2.0** con
 Uso para la demo:
 
 ```bash
-python main.py --container <nombre> --nvd-feed sample_nvd.json
-python main.py --image nginx:latest --nvd-feed sample_nvd.json
+python3 main.py --container <nombre> --nvd-feed sample_nvd.json
+python3 main.py --image nginx:latest --nvd-feed sample_nvd.json
 ```
 
 ### Descarga de feeds completos (producción)
@@ -509,7 +509,7 @@ bash scripts/download_nvd_feed.sh 2024 feeds/
 El script divide el año en ventanas de 90 días (límite máximo de la NVD API por petición), pagina automáticamente (2 000 CVEs por página) y genera un único fichero JSON. Un año completo contiene ~30 000 CVEs y tarda 3–4 minutos sin clave API o menos de 1 minuto con ella.
 
 ```bash
-python main.py --nvd-feed feeds/nvdcve-2.0-2024.json
+python3 main.py --nvd-feed feeds/nvdcve-2.0-2024.json
 ```
 
 ### Consideraciones sobre el matching
@@ -699,7 +699,7 @@ DockAudit-SCA/
 
 ## 11. Cobertura de controles CIS
 
-La herramienta evalúa 55 de los 69 controles del CIS Docker Benchmark 1.6.
+La herramienta evalúa 55 de los 64 controles del CIS Docker Benchmark 1.6 cubiertos en las ocho secciones implementadas.
 
 ### Controles implementados por sección
 
