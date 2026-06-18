@@ -1,0 +1,518 @@
+{
+  "format": "NVD_CVE",
+  "version": "2.0",
+  "timestamp": "2025-01-01T00:00:00.000",
+  "totalResults": 15,
+  "vulnerabilities": [
+    {
+      "cve": {
+        "id": "CVE-2021-44228",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Apache Log4j2 JNDI features do not protect against attacker-controlled LDAP and other JNDI related endpoints. An attacker who can control log messages or log message parameters can execute arbitrary code loaded from LDAP servers. Known as Log4Shell."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 10.0,
+                "baseSeverity": "CRITICAL",
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:apache:log4j:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-0778",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "The BN_mod_sqrt() function in OpenSSL, which computes a modular square root, contains a bug that can cause it to loop forever for non-prime moduli. This can be triggered by malformed certificates, causing a denial of service."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 7.5,
+                "baseSeverity": "HIGH",
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-1292",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "The c_rehash script in OpenSSL does not properly sanitise shell metacharacters, allowing command injection. An attacker could exploit this to execute arbitrary commands with the privileges of the script."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 9.8,
+                "baseSeverity": "CRITICAL",
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-0286",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "A type confusion vulnerability in OpenSSL relating to X.400 address processing inside an X.509 GeneralName. This may allow an attacker to pass arbitrary pointers to a memcmp call, enabling memory reads or denial of service."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 7.4,
+                "baseSeverity": "HIGH",
+                "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:H"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2021-3156",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Sudo before 1.9.5p2 contains a heap-based buffer overflow that allows privilege escalation to root via sudoedit -s and a command-line argument that ends with a single backslash character. Known as Baron Samedit."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 7.8,
+                "baseSeverity": "HIGH",
+                "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:sudo_project:sudo:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-32207",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "When curl saves cookies, alt-svc and hsts data to local files, it makes the operation atomic by renaming a temporary file to the final target. This allows a local attacker to change the permissions of the final file."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 9.8,
+                "baseSeverity": "CRITICAL",
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:haxx:curl:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-42915",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "curl before 7.86.0 has a double free vulnerability in the HTTP proxy connection code. An attacker controlling a malicious HTTP proxy can trigger this to potentially execute arbitrary code."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 9.8,
+                "baseSeverity": "CRITICAL",
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:haxx:curl:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-38408",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "The PKCS#11 feature in ssh-agent in OpenSSH before 9.3p2 has an insufficiently trustworthy search path, leading to remote code execution if an agent is forwarded to an attacker-controlled system."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 9.8,
+                "baseSeverity": "CRITICAL",
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:openbsd:openssh:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-37434",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "zlib through 1.2.12 has a heap-based buffer over-read or buffer overflow in inflate() via a large gzip header extra field, triggered by calling inflateGetHeader."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 9.8,
+                "baseSeverity": "CRITICAL",
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:zlib:zlib:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-44487",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "The HTTP/2 protocol allows a denial of service because request cancellation can reset many streams quickly. Known as the HTTP/2 Rapid Reset attack, it has been exploited in large-scale DDoS campaigns."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 7.5,
+                "baseSeverity": "HIGH",
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:nginx:nginx:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2024-3094",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Malicious code was discovered in upstream tarballs of xz-utils versions 5.6.0 and 5.6.1. The backdoor manipulates sshd via systemd, allowing a remote attacker with a specific key to execute arbitrary commands as root."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 10.0,
+                "baseSeverity": "CRITICAL",
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:tukaani:xz:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-29491",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "ncurses before 6.4-20230408 has memory-corruption issues when processing malformed terminfo data. An attacker can exploit crafted terminfo data to cause stack or heap corruption."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 7.8,
+                "baseSeverity": "HIGH",
+                "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:gnu:ncurses:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-24329",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "An issue in the urllib.parse component of Python before 3.11.4 allows attackers to bypass blocklisting methods by supplying a URL with a blank host component, affecting urllib.parse.urlparse and urllib.parse.urlsplit."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 7.5,
+                "baseSeverity": "HIGH",
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:python:python:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-24765",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Git on multi-user machines where git is installed in a world-writable directory allows another user to place a hostile .git directory that can affect operations run by the first user."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 7.8,
+                "baseSeverity": "HIGH",
+                "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:git-scm:git:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-4863",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Heap buffer overflow in libwebp allows a remote attacker to perform an out of bounds memory write via a crafted image. Affects any software embedding libwebp, including browsers and image processing tools."
+          }
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "cvssData": {
+                "baseScore": 8.8,
+                "baseSeverity": "HIGH",
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H"
+              }
+            }
+          ]
+        }
+      },
+      "configurations": {
+        "nodes": [
+          {
+            "cpeMatch": [
+              {
+                "vulnerable": true,
+                "cpe23Uri": "cpe:2.3:a:google:libwebp:*:*:*:*:*:*:*:*"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
