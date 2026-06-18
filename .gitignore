@@ -3,10 +3,12 @@ __pycache__/
 *.pyo
 *.log
 *.sqlite3
+.venv/
 venv/
 .env
 dist/
 build/
 *.tar
-*.json
+feeds/
+reports/
 nvd_data/
