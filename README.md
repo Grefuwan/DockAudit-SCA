@@ -29,6 +29,7 @@ Prototipo funcional de herramienta de auditoría de seguridad para entornos Dock
 - Evaluación de cumplimiento del CIS Docker Benchmark 1.6 (55 controles) mapeados a ISO/IEC 27001:2022
 - Informe HTML interactivo: navegación lateral, hallazgos colapsables, badges de severidad y origen, inventario de paquetes con enlace a CVEs
 - Integración CI/CD: `--fail-on <severidad>` sale con código 2 si los hallazgos superan el umbral; `--skip-host` audita solo imágenes/contenedores
+- **Sistema de logging estructurado**: cada auditoría genera automáticamente un fichero de log completo en `reports/logs/YYYYMMDD-HHMMSS_-_audit.log`; flag `--debug` activa el nivel DEBUG en consola
 - Todos los ficheros de salida siguen el patrón `YYYYMMDD-HHMMSS_-_Tipo_objetivo.ext`
 
 ## Inicio rápido
@@ -39,6 +40,9 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python3 main.py
+
+# Con salida de debug en consola (opcional)
+python3 main.py --debug
 ```
 
 Ver `docs/MANUAL.md` para la referencia completa de opciones y ejemplos.
@@ -49,23 +53,43 @@ La herramienta extrae las dependencias instaladas en imágenes Docker (dpkg, rpm
 
 ### Feed de demo (incluido)
 
-`sample_nvd.json` está incluido en el repositorio y contiene **15 CVEs reales** de los paquetes más habituales en imágenes Docker: `openssl`, `curl`, `nginx`, `python`, `sudo`, `openssh`, `zlib`, `xz-utils`, `ncurses`, `git`, `libwebp` y `log4j`.
+`feeds/NVD_Sample_-_80.json` está incluido en el repositorio y contiene **88 CVEs reales** de los paquetes más habituales en imágenes Docker, agrupados por categoría:
+
+- **Sistema base:** `openssl`, `curl`, `bash`, `glibc`, `zlib`, `gzip`, `tar`, `bzip2`, `xz-utils`, `ncurses`, `busybox`
+- **Servicios de red:** `openssh`, `nginx`, `wget`
+- **Herramientas:** `sudo`, `git`, `expat`/`libexpat`, `sqlite`, `libxml2`, `freetype`, `pcre2`, `libwebp`, `imagemagick`
+- **Contenedores:** `runc`, `containerd`
+- **Java/JVM:** `log4j`, `spring-framework`, `commons-text`, `jackson-databind`, `tomcat`
+- **Bases de datos:** `redis`, `postgresql`
+- **Python:** `python`, `requests`, `pillow`, `cryptography`, `pyyaml`, `werkzeug`, `setuptools`, `paramiko`, `aiohttp`, `django`, `flask`, `protobuf`
+- **Go:** `go` (stdlib)
+
+El repositorio incluye también `feeds/NVD_Sample_-_15.json`, versión reducida con los 15 CVEs originales de los paquetes más comunes.
 
 ```bash
 # Auditar un contenedor específico con correlación CVE
-python3 main.py --container <nombre> --nvd-feed sample_nvd.json
+python3 main.py --container <nombre> --nvd-feed feeds/NVD_Sample_-_80.json
 
 # Auditar una imagen descargada sin contenedor en ejecución
-python3 main.py --image nginx:latest --nvd-feed sample_nvd.json
+python3 main.py --image nginx:latest --nvd-feed feeds/NVD_Sample_-_80.json
 ```
 
 ### Imagen de demo (incluida)
 
-`Dockerfile.demo` construye una imagen con los paquetes correspondientes a los 15 CVEs de `sample_nvd.json`, además de configuraciones deliberadamente inseguras (binarios SUID, secretos en variables de entorno, rutas con escritura universal):
+`Dockerfile.demo` construye una imagen con los paquetes correspondientes a los CVEs de `feeds/NVD_Sample_-_15.json`, además de configuraciones deliberadamente inseguras (binarios SUID, secretos en variables de entorno, rutas con escritura universal):
 
 ```bash
 docker build -t dockaudit-demo -f Dockerfile.demo .
-python3 main.py --image dockaudit-demo --nvd-feed sample_nvd.json
+python3 main.py --image dockaudit-demo --nvd-feed feeds/NVD_Sample_-_15.json
+```
+
+### Imagen ultra-vulnerable (incluida)
+
+`Dockerfile.vulnerable` construye `mega-vuln:latest`, una imagen basada en `debian:bullseye` que instala intencionalmente paquetes de sistema y librerías Python con versiones antiguas y vulnerables, además de secretos hardcodeados en variables de entorno. Diseñada para maximizar las detecciones de DockAudit-SCA en pruebas:
+
+```bash
+docker build -t mega-vuln -f Dockerfile.vulnerable .
+python3 main.py --image mega-vuln:latest --nvd-feed feeds/NVD_Sample_-_80.json --skip-host
 ```
 
 ### Descarga de un feed NVD completo
@@ -94,7 +118,7 @@ python3 main.py --nvd-feed feeds/nvdcve-2.0-2024.json
 
 ```bash
 # Generar el informe en JSON y comparar
-python3 main.py --image dockaudit-demo --nvd-feed sample_nvd.json --output json
+python3 main.py --image dockaudit-demo --nvd-feed feeds/NVD_Sample_-_80.json --output json
 python3 scripts/compare_with_trivy.py --report reports/<ts>_-_Audit_Report_dockaudit-demo.json --image dockaudit-demo
 ```
 
@@ -109,6 +133,7 @@ Todos los ficheros de salida siguen el patrón `YYYYMMDD-HHMMSS_-_Type_target.ex
 | `reports/<ts>_-_Compliance_Report_<target>.html` | Reporte CIS/ISO 27001 (HTML) |
 | `reports/<ts>_-_Compliance_Report_<target>.json` | Reporte CIS/ISO 27001 (JSON) |
 | `reports/sbom/<ts>_-_SBOM_<target>.json` | SBOM en formato CycloneDX 1.4 |
+| `reports/logs/<ts>_-_audit.log` | Log completo de la auditoría (nivel DEBUG) |
 
 ## Documentación
 

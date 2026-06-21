@@ -94,6 +94,7 @@ python3 main.py [opciones]
 | `--image` | _(ninguno)_ | Nombre/tag de una imagen a auditar sin necesidad de contenedor desplegado |
 | `--skip-host` | _(desactivado)_ | Omite la auditoría del host (útil para auditar solo imágenes/contenedores) |
 | `--fail-on` | `none` | Sale con código 2 si hay hallazgos de severidad igual o superior (`low`, `medium`, `high`, `critical`). Pensado para integración en pipelines CI/CD |
+| `--debug` | _(desactivado)_ | Activa el nivel de log DEBUG en la consola (el fichero de log siempre registra nivel DEBUG) |
 
 ### Ejemplos de uso
 
@@ -108,7 +109,7 @@ python3 main.py --container dvwa
 python3 main.py --image nginx:latest
 
 # Auditoría con el feed de demo incluido (15 CVEs reales)
-python3 main.py --nvd-feed sample_nvd.json
+python3 main.py --nvd-feed feeds/NVD_Sample_-_80.json
 
 # Auditoría con feed NVD completo descargado
 python3 main.py --nvd-feed feeds/nvdcve-2.0-2024.json
@@ -143,18 +144,18 @@ python3 main.py --nvd-feed feeds/nvdcve-2.0-2024.json --fail-on high
 ### Salida esperada en consola
 
 ```
-[*] Iniciando auditoría Docker...
-[*] Ejecutando auditoría del host...
-[*] Ejecutando auditoría de contenedores...
-[*] Ejecutando análisis de imágenes...
-[+] SBOM written to: reports/sbom/20260611-120000_-_SBOM_<target>.json
-[*] Evaluando compliance (CIS Docker Benchmark & ISO/IEC 27001)...
-[+] Compliance evaluation completed: 55 controls evaluated
-[*] Auditoría finalizada.
-[*] Generando informe...
-[+] HTML report written to: reports/20260611-120000_-_Audit_Report_<target>.html
-[+] Compliance JSON report written to: reports/20260611-120000_-_Compliance_Report_<target>.json
-[+] Compliance HTML report written to: reports/20260611-120000_-_Compliance_Report_<target>.html
+20260621-143022_-_orchestrator.py_-_run_audit_-_INFO: Iniciando auditoría Docker...
+20260621-143022_-_orchestrator.py_-_run_audit_-_INFO: Ejecutando auditoría del host...
+20260621-143022_-_orchestrator.py_-_run_audit_-_INFO: Ejecutando auditoría de contenedores...
+20260621-143022_-_orchestrator.py_-_run_audit_-_INFO: Ejecutando análisis de imágenes...
+20260621-143022_-_sbom_generator.py_-_generate_-_INFO: SBOM written to: reports/sbom/20260621-143022_-_SBOM_<target>.json
+20260621-143022_-_orchestrator.py_-_run_audit_-_INFO: Evaluando compliance (CIS Docker Benchmark & ISO/IEC 27001)...
+20260621-143022_-_evaluator.py_-_evaluate_-_INFO: Compliance evaluation completed: 55 controls evaluated
+20260621-143022_-_orchestrator.py_-_run_audit_-_INFO: Auditoría finalizada.
+20260621-143022_-_orchestrator.py_-_run_audit_-_INFO: Generando informe...
+20260621-143022_-_report_generator.py_-_to_html_-_INFO: HTML report written to: reports/20260621-143022_-_Audit_Report_<target>.html
+20260621-143022_-_report_generator.py_-_to_json_-_INFO: Compliance JSON report written to: reports/20260621-143022_-_Compliance_Report_<target>.json
+20260621-143022_-_report_generator.py_-_to_html_-_INFO: Compliance HTML report written to: reports/20260621-143022_-_Compliance_Report_<target>.html
 
 === CIS Docker Benchmark & ISO/IEC 27001 Compliance Summary ===
 Total Controls: 55
@@ -179,6 +180,10 @@ YYYYMMDD-HHMMSS_-_Tipo_objetivo.ext
 | `--image nginx:latest` | `nginx_latest` |
 
 Esto garantiza que ejecuciones sucesivas no sobreescriban los resultados anteriores.
+
+| Tipo de fichero | Descripción |
+|---|---|
+| `reports/logs/<ts>_-_audit.log` | Log completo de la ejecución (DEBUG+) — generado siempre |
 
 ---
 
@@ -369,14 +374,14 @@ Inicializa todos los módulos, gestiona el orden de ejecución y agrega los resu
 | `container_filter` | str\|None | Nombre de contenedor |
 | `image_filter` | str\|None | Tag de imagen |
 | `compliance_enabled` | bool | Activar evaluación CIS/ISO (default `True`) |
+| `skip_host` | bool | Omite la auditoría del host |
 
 ### 5.8 `utils` — Utilidades
 
-Funciones auxiliares para:
+**Ficheros:** `dockaudit/utils/helpers.py`, `dockaudit/utils/logger.py`
 
-- Normalización de nombres de paquetes.
-- Parseo de strings CPE 2.3.
-- Extracción y comparación de versiones semánticas.
+- `helpers.py`: Funciones auxiliares para normalización de nombres de paquetes, parseo de strings CPE 2.3 y comparación de versiones semánticas.
+- `logger.py`: Configura el sistema de logging centralizado mediante `setup_logging(debug, log_file)`. Establece dos destinos: consola (`stdout`) con nivel INFO por defecto (DEBUG si `--debug`) y fichero en `reports/logs/` con nivel DEBUG siempre. Cada módulo del proyecto obtiene su propio logger con `logging.getLogger(__name__)`, lo que produce entradas con el nombre de fichero y función exactos.
 
 ---
 
@@ -465,31 +470,48 @@ Imagen Docker
 
 ### Feed de demo incluido
 
-El repositorio incluye `sample_nvd.json`, un feed en **formato NVD API 2.0** con **15 CVEs reales** seleccionados por su relevancia en entornos Docker:
+El repositorio incluye `feeds/NVD_Sample_-_80.json`, un feed en **formato NVD API 2.0** con **88 CVEs reales** seleccionados por su relevancia en entornos Docker. También se incluye `feeds/NVD_Sample_-_15.json`, versión reducida con los 15 CVEs originales para pruebas mínimas:
 
 | CVE | Paquete afectado | Descripción resumida |
 |---|---|---|
 | CVE-2021-44228 | `log4j` | Log4Shell — ejecución remota de código |
+| CVE-2021-45046 | `log4j` | Escape de contexto en Log4j 2 (RCE/DoS) |
 | CVE-2022-0778 | `openssl` | Bucle infinito en BN_mod_sqrt (DoS) |
 | CVE-2022-1292 | `openssl` | Inyección de comandos en c_rehash |
 | CVE-2023-0286 | `openssl` | Confusión de tipos en X.400 (lectura de memoria) |
 | CVE-2021-3156 | `sudo` | Baron Samedit — escalada de privilegios a root |
+| CVE-2019-14287 | `sudo` | Bypass de restricción de usuario con UID -1 |
 | CVE-2022-32207 | `curl` | Permisos incorrectos al guardar cookies/HSTS |
-| CVE-2022-42915 | `curl` | Double-free en código de proxy HTTP |
+| CVE-2023-38545 | `curl` | Heap overflow en SOCKS5 proxy handshake |
 | CVE-2023-38408 | `openssh` | RCE en ssh-agent vía PKCS#11 |
+| CVE-2024-6387 | `openssh` | Race condition en signal handler (RCE) |
 | CVE-2022-37434 | `zlib` | Heap overflow en inflate() |
 | CVE-2023-44487 | `nginx` | HTTP/2 Rapid Reset (DDoS) |
+| CVE-2022-41741 | `nginx` | Corrupción de memoria en módulo mp4 |
 | CVE-2024-3094 | `xz-utils` | Backdoor en liblzma 5.6.0/5.6.1 |
 | CVE-2023-29491 | `ncurses` | Corrupción de memoria con terminfo malformado |
 | CVE-2023-24329 | `python` | Bypass de blocklist en urllib.parse |
+| CVE-2022-45061 | `python` | ReDoS en codec IDNA (DoS) |
 | CVE-2022-24765 | `git` | Directorio .git modificable por otro usuario |
+| CVE-2014-6271 | `bash` | Shellshock — ejecución de código en variables de entorno |
+| CVE-2024-2961 | `glibc` | Overflow en conversión de charset iconv |
+| CVE-2022-40674 | `expat` | Use-after-free en parseado XML |
+| CVE-2023-7104 | `sqlite` | Use-after-free en sessionReadRecord |
 | CVE-2023-4863 | `libwebp` | Heap overflow en decodificación de imágenes WebP |
+| CVE-2024-21626 | `runc` | Escape de contenedor por descriptor de fichero filtrado |
+| CVE-2022-22965 | `spring-framework` | Spring4Shell — RCE en Spring MVC |
+| CVE-2022-33980 | `commons-text` | Interpolación de variables no esperada (RCE) |
+| CVE-2020-14343 | `pyyaml` | RCE por deserialización YAML insegura |
+| CVE-2023-46136 | `werkzeug` | DoS por multipart sin límite de tamaño |
+| CVE-2023-36053 | `django` | ReDoS en validadores de URL/email |
+
+> El feed incluye 88 CVEs en total; la tabla muestra una selección representativa.
 
 Uso para la demo:
 
 ```bash
-python3 main.py --container <nombre> --nvd-feed sample_nvd.json
-python3 main.py --image nginx:latest --nvd-feed sample_nvd.json
+python3 main.py --container <nombre> --nvd-feed feeds/NVD_Sample_-_80.json
+python3 main.py --image nginx:latest --nvd-feed feeds/NVD_Sample_-_80.json
 ```
 
 ### Descarga de feeds completos (producción)
@@ -512,10 +534,12 @@ El script divide el año en ventanas de 90 días (límite máximo de la NVD API 
 python3 main.py --nvd-feed feeds/nvdcve-2.0-2024.json
 ```
 
+El script gestiona automáticamente los límites de la API NVD: reintentos ante respuestas truncadas o errores HTTP 429, validación del JSON descargado con `jq` antes de procesar, y un timeout de 300 segundos por petición para acomodar ventanas temporales con muchos CVEs.
+
 ### Consideraciones sobre el matching
 
 - El matching es por nombre de paquete: `curl` en el nombre del componente coincide con `haxx:curl` en el CPE; `python3` coincide con `python:python`.
-- Las versiones en `sample_nvd.json` usan `*` (cualquier versión) para maximizar coincidencias en la demo.
+- Las versiones en `feeds/NVD_Sample_-_80.json` usan `*` (cualquier versión) para maximizar coincidencias en la demo.
 - El matching de versiones es flexible: `3.11` en el feed coincide con `3.11.5` en el paquete.
 - Un paquete sin versión detectable se correlaciona igualmente si el CPE tiene versión `*`.
 - Para cobertura completa en producción se recomienda descargar feeds de los últimos 2-3 años.
@@ -532,7 +556,7 @@ La herramienta genera hasta cinco ficheros de salida por ejecución. Todos sigue
 
 Generado por `ReportGenerator` usando una plantilla Jinja2. El reporte HTML incluye:
 
-- **Sidebar de navegación** fija con enlaces a cada sección y contador de hallazgos.
+- **Sidebar de navegación** fija con enlaces a cada sección y contador de hallazgos. Si se ha usado un feed NVD, el nombre del fichero aparece también en la barra lateral bajo el objetivo y en el pie del informe junto a la ruta del SBOM.
 - **Tarjetas de resumen** (total, críticos, altos, medios, CVEs, paquetes).
 - **Hallazgos** agrupados por sección, filtrados por severidad mínima (`--severity`). Cada hallazgo es una card colapsable que muestra:
   - Badge de severidad (`critical`, `high`, `medium`, `low`, `info`).
@@ -589,6 +613,12 @@ El reporte JSON tiene esta estructura:
 
 Formato **CycloneDX 1.4** JSON. Contiene los componentes software identificados en todas las imágenes analizadas, incluyendo el campo `image` con el tag de origen de cada paquete. Compatible con herramientas como Dependency-Track, Grype o Trivy para análisis adicional.
 
+### 8.4 Log de auditoría
+
+**Ruta:** `reports/logs/<timestamp>_-_audit.log`
+
+Generado automáticamente en cada ejecución. Registra la traza completa a nivel DEBUG: inicialización del cliente Docker, cada petición HTTP al daemon, módulo y función exactos que los originan, tiempos de procesamiento por imagen y resumen final. Útil para diagnóstico de incidencias y para auditar el propio proceso de auditoría. El flag `--debug` duplica esta salida en consola.
+
 ---
 
 ## 9. Suite de tests
@@ -637,8 +667,13 @@ DockAudit-SCA/
 ├── main.py                          # Punto de entrada (CLI)
 ├── setup.py                         # Configuración del paquete Python
 ├── requirements.txt                 # Dependencias
-├── sample_nvd.json                  # Feed NVD de demo (15 CVEs reales)
 ├── Dockerfile.demo                  # Imagen con paquetes vulnerables y misconfigs para demo
+├── Dockerfile.vulnerable            # Imagen ultra-vulnerable (mega-vuln:latest) para stress-testing
+│
+├── feeds/                           # Feeds NVD locales
+│   ├── NVD_Sample_-_15.json         # Feed de demo reducido (15 CVEs reales)
+│   ├── NVD_Sample_-_80.json         # Feed de demo ampliado (88 CVEs reales)
+│   └── nvdcve-2.0-2024.json         # Feed completo 2024 (~40 000 CVEs, descargado con el script)
 │
 ├── dockaudit/                       # Paquete principal (23 ficheros, ~4 200 líneas)
 │   ├── host_audit/
@@ -664,6 +699,8 @@ DockAudit-SCA/
 │   ├── orchestrator/
 │   │   └── orchestrator.py
 │   └── utils/
+│       ├── helpers.py
+│       └── logger.py
 │
 ├── tests/                           # Suite de tests (11 ficheros, 51 tests)
 │   ├── test_binary_analyzer.py
@@ -691,8 +728,10 @@ DockAudit-SCA/
     ├── <timestamp>_-_Audit_Report_<target>.json
     ├── <timestamp>_-_Compliance_Report_<target>.html
     ├── <timestamp>_-_Compliance_Report_<target>.json
-    └── sbom/
-        └── <timestamp>_-_SBOM_<target>.json
+    ├── sbom/
+    │   └── <timestamp>_-_SBOM_<target>.json
+    └── logs/
+        └── <timestamp>_-_audit.log
 ```
 
 ---
