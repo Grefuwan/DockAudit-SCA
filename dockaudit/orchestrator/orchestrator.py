@@ -31,6 +31,7 @@ class Orchestrator:
         self.container_filter = container_filter
         self.image_filter = image_filter
         self.skip_host = skip_host
+        self.nvd_feed = nvd_feed
 
         self.host_audit = HostAudit(target)
         self.container_audit = ContainerAudit(target, container_filter=container_filter)
@@ -170,7 +171,7 @@ class Orchestrator:
 
         logger.info("Generando informe...")
         audit_filename = f"{timestamp}_-_Audit_Report_{suffix}"
-        self.report_generator.generate(results, audit_target=audit_target, out_filename=audit_filename)
+        self.report_generator.generate(results, audit_target=audit_target, out_filename=audit_filename, nvd_feed=self.nvd_feed)
 
         if "compliance" in results and results["compliance"]:
             compliance_findings = results["compliance"]

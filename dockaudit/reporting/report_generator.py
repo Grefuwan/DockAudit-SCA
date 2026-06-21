@@ -34,7 +34,7 @@ class ReportGenerator:
         )
         return env.get_template("report_template.html")
 
-    def generate(self, results, audit_target="All Containers", out_filename=None):
+    def generate(self, results, audit_target="All Containers", out_filename=None, nvd_feed=None):
         logger.debug("Generando informe de auditoría para: %s", audit_target)
         os.makedirs("reports", exist_ok=True)
 
@@ -83,6 +83,8 @@ class ReportGenerator:
             logger.info("JSON report written to: %s", out_path)
             return out_path
 
+        nvd_feed_name = os.path.basename(nvd_feed) if nvd_feed else None
+
         template = self._template()
         report_html = template.render(
             results=filtered_results,
@@ -93,7 +95,8 @@ class ReportGenerator:
             packages=packages,
             vuln_by_package=vuln_by_package,
             sbom_path=results.get("sbom_path"),
-            audit_target=audit_target
+            audit_target=audit_target,
+            nvd_feed_name=nvd_feed_name
         )
 
         out_path = os.path.join("reports", f"{base}.html")

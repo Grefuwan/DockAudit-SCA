@@ -391,6 +391,11 @@
   <div class="sidebar-target">
     <strong>Objetivo</strong>{{ audit_target }}
   </div>
+  {% if nvd_feed_name %}
+  <div class="sidebar-target" style="margin-top:0.5rem">
+    <strong>Feed NVD</strong>{{ nvd_feed_name }}
+  </div>
+  {% endif %}
   <nav class="sidebar-nav">
     <div class="nav-section-label">Hallazgos</div>
     {% for section, items in results.items() %}
@@ -537,9 +542,11 @@
     </section>
     {% endif %}
 
-    {% if sbom_path %}
+    {% if sbom_path or nvd_feed_name %}
     <div class="report-footer">
-      SBOM: <code>{{ sbom_path }}</code>
+      {% if sbom_path %}SBOM: <code>{{ sbom_path }}</code>{% endif %}
+      {% if sbom_path and nvd_feed_name %} &nbsp;·&nbsp; {% endif %}
+      {% if nvd_feed_name %}Feed NVD: <code>{{ nvd_feed_name }}</code>{% endif %}
     </div>
     {% endif %}
 
