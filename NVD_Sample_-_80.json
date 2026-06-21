@@ -1,0 +1,712 @@
+{
+  "format": "NVD_CVE",
+  "version": "2.0",
+  "timestamp": "2025-01-01T00:00:00.000",
+  "totalResults": 88,
+  "vulnerabilities": [
+    {
+      "cve": {
+        "id": "CVE-2021-44228",
+        "descriptions": [{"lang": "en", "value": "Apache Log4j2 JNDI features do not protect against attacker-controlled LDAP and other JNDI related endpoints. An attacker who can control log messages or log message parameters can execute arbitrary code loaded from LDAP servers. Known as Log4Shell."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 10.0, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:apache:log4j:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2021-45046",
+        "descriptions": [{"lang": "en", "value": "It was found that the fix to address CVE-2021-44228 in Apache Log4j 2.15.0 was incomplete in certain non-default configurations. Attackers can craft malicious input data using a JNDI Lookup pattern resulting in a denial of service or information leak."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.0, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:apache:log4j:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2021-45105",
+        "descriptions": [{"lang": "en", "value": "Apache Log4j2 versions 2.0-alpha1 through 2.16.0 did not protect from uncontrolled recursion from self-referential lookups, allowing attackers to cause DoS via crafted strings."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:apache:log4j:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-0778",
+        "descriptions": [{"lang": "en", "value": "The BN_mod_sqrt() function in OpenSSL, which computes a modular square root, contains a bug that can cause it to loop forever for non-prime moduli. This can be triggered by malformed certificates, causing a denial of service."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-1292",
+        "descriptions": [{"lang": "en", "value": "The c_rehash script in OpenSSL does not properly sanitise shell metacharacters, allowing command injection with the privileges of the script."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-0215",
+        "descriptions": [{"lang": "en", "value": "Use-after-free following BIO_new_NDEF in OpenSSL. A attacker can cause memory corruption via crafted inputs, leading to denial of service or potential code execution."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-0286",
+        "descriptions": [{"lang": "en", "value": "A type confusion vulnerability in OpenSSL relating to X.400 address processing inside an X.509 GeneralName, allowing memory reads or denial of service."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.4, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-2650",
+        "descriptions": [{"lang": "en", "value": "Issue processing some specially crafted ASN.1 object identifiers or data in OpenSSL could cause excessive resource usage resulting in denial of service."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 6.5, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2024-0727",
+        "descriptions": [{"lang": "en", "value": "Processing a maliciously formatted PKCS12 file may lead OpenSSL to crash, causing a denial of service via a NULL pointer dereference."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 5.5, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2014-0160",
+        "descriptions": [{"lang": "en", "value": "The Heartbleed bug in OpenSSL 1.0.1 allows remote attackers to obtain sensitive information from process memory via crafted TLS heartbeat packets. This exposes private keys, user credentials, and session tokens."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:openssl:openssl:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-32207",
+        "descriptions": [{"lang": "en", "value": "When curl saves cookies, alt-svc and hsts data to local files, it makes the operation atomic by renaming a temporary file to the final target. This allows a local attacker to change the permissions of the final file."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:haxx:curl:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-42915",
+        "descriptions": [{"lang": "en", "value": "curl before 7.86.0 has a double free vulnerability in the HTTP proxy connection code. An attacker controlling a malicious HTTP proxy can trigger this."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:haxx:curl:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-38545",
+        "descriptions": [{"lang": "en", "value": "A heap-based buffer overflow in the SOCKS5 proxy handshake in curl can be triggered by a malicious SOCKS5 server sending an extremely long hostname, allowing remote code execution."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:haxx:curl:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-28322",
+        "descriptions": [{"lang": "en", "value": "A use-after-free in curl's HTTP multi-request handling when combining POST and PUT requests can lead to information disclosure."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 3.7, "baseSeverity": "LOW", "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:haxx:curl:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2024-2398",
+        "descriptions": [{"lang": "en", "value": "When an application tells libcurl it wants to allow HTTP/2 server push, and the server does push a header field that does not exist, libcurl has a memory leak that grows until the transfer ends."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 8.6, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:haxx:curl:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-24329",
+        "descriptions": [{"lang": "en", "value": "An issue in the urllib.parse component of Python before 3.11.4 allows attackers to bypass blocklisting methods by supplying a URL with a blank host component."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:python:python:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-45061",
+        "descriptions": [{"lang": "en", "value": "An issue in CPython 3.11 through 3.11.0 allows denial of service via a very long idna name that triggers a quadratic time algorithm in the encodings.idna module."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:python:python:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-27043",
+        "descriptions": [{"lang": "en", "value": "The email module of Python incorrectly parses email addresses that contain a special character, allowing attackers to spoof email senders."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 5.3, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:python:python:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2024-0450",
+        "descriptions": [{"lang": "en", "value": "An issue in the zipfile module of CPython allows extraction of crafted zip archives to directories outside the intended destination tree via path traversal."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 6.2, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:python:python:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-44487",
+        "descriptions": [{"lang": "en", "value": "The HTTP/2 protocol allows a denial of service because request cancellation can reset many streams quickly. Known as the HTTP/2 Rapid Reset attack, exploited in large-scale DDoS campaigns."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:nginx:nginx:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-41741",
+        "descriptions": [{"lang": "en", "value": "NGINX Open Source and NGINX Plus have a vulnerability in the ngx_http_mp4_module, which might allow an attacker to corrupt NGINX worker memory via a specially crafted mp4 file."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.8, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:nginx:nginx:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-41742",
+        "descriptions": [{"lang": "en", "value": "NGINX Open Source and NGINX Plus have a vulnerability in the ngx_http_mp4_module, which might allow an attacker to read memory beyond the shared memory region."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.1, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:nginx:nginx:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2021-3156",
+        "descriptions": [{"lang": "en", "value": "Sudo before 1.9.5p2 contains a heap-based buffer overflow that allows privilege escalation to root via sudoedit -s. Known as Baron Samedit."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.8, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:sudo_project:sudo:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2019-14287",
+        "descriptions": [{"lang": "en", "value": "In Sudo before 1.8.28, an attacker with access to a Runas ALL sudoer account can bypass the restrictions by specifying the user ID -1 or 4294967295 to execute commands as root."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 8.8, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:sudo_project:sudo:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-42465",
+        "descriptions": [{"lang": "en", "value": "Sudo before 1.9.15 may be susceptible to a rowhammer-style attack that bypasses password or user restriction policies via sudo_debug calls."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.0, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:sudo_project:sudo:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-38408",
+        "descriptions": [{"lang": "en", "value": "The PKCS#11 feature in ssh-agent in OpenSSH before 9.3p2 has an insufficiently trustworthy search path, leading to remote code execution if an agent is forwarded to an attacker-controlled system."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:openbsd:openssh:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2024-6387",
+        "descriptions": [{"lang": "en", "value": "A signal handler race condition in OpenSSH's server (sshd) allows unauthenticated remote code execution as root on glibc-based Linux systems. Regression of CVE-2006-5051. Known as regreSSHion."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 8.1, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:openbsd:openssh:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-51385",
+        "descriptions": [{"lang": "en", "value": "In OpenSSH before 9.6, OS command injection via shell metacharacters is possible in ProxyCommand, ProxyJump, and related settings when hostnames contain special characters."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 6.5, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:openbsd:openssh:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-24765",
+        "descriptions": [{"lang": "en", "value": "Git on multi-user machines where git is installed in a world-writable directory allows another user to place a hostile .git directory that affects operations run by the first user."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.8, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:git-scm:git:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-29007",
+        "descriptions": [{"lang": "en", "value": "Git's submodule deinit may write a config value with a specially crafted name that overrides the user's git config, leading to privilege escalation or code execution on the next git invocation."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.8, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:git-scm:git:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2024-32002",
+        "descriptions": [{"lang": "en", "value": "Git on case-insensitive filesystems with support for symlinks is vulnerable to remote code execution during clone operations via a symlink pointing to the .git directory."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.0, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:git-scm:git:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2014-6271",
+        "descriptions": [{"lang": "en", "value": "GNU Bash through 4.3 processes trailing strings after function definitions in environment variable values, allowing remote attackers to execute arbitrary code via a crafted environment. Known as Shellshock."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:gnu:bash:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2019-18276",
+        "descriptions": [{"lang": "en", "value": "An issue in GNU Bash allows a privileged user to bypass restrictions when they are set via the PATH_RESTRICTED option, leading to privilege escalation."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.8, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:gnu:bash:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2024-2961",
+        "descriptions": [{"lang": "en", "value": "The iconv() function in the GNU C Library has a buffer overflow when converting strings to the ISO-2022-CN-EXT character set, allowing heap-based buffer overflow and potential code execution."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.3, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:gnu:glibc:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-4806",
+        "descriptions": [{"lang": "en", "value": "A flaw in glibc's getaddrinfo() function allows an attacker to trigger a memory leak via crafted hostname inputs, potentially causing a denial of service."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 5.9, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:gnu:glibc:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-23852",
+        "descriptions": [{"lang": "en", "value": "Expat (libexpat) through 2.4.4 has a signed integer overflow in XML_GetBuffer, which allows remote attackers to cause a denial of service or potential code execution."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:libexpat:expat:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-40674",
+        "descriptions": [{"lang": "en", "value": "libexpat before 2.4.9 has a use-after-free in the doContent function in xmlparse.c, which can be triggered by malformed XML input."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:libexpat:expat:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-52425",
+        "descriptions": [{"lang": "en", "value": "libexpat through 2.5.0 allows denial of service via stack exhaustion when processing large tokens in deeply nested XML entities."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:libexpat:expat:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-35737",
+        "descriptions": [{"lang": "en", "value": "SQLite 1.0.12 through 3.39.x before 3.39.2 sometimes allows an array-bounds overflow when a string argument is passed to a printf function."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:sqlite:sqlite:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-7104",
+        "descriptions": [{"lang": "en", "value": "A vulnerability was found in SQLite where the sessionReadRecord function in ext/session/sqlite3session.c can be exploited via a crafted database file to cause a use-after-free."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 8.8, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:sqlite:sqlite:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-37434",
+        "descriptions": [{"lang": "en", "value": "zlib through 1.2.12 has a heap-based buffer over-read or buffer overflow in inflate() via a large gzip header extra field, triggered by calling inflateGetHeader."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:zlib:zlib:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-40303",
+        "descriptions": [{"lang": "en", "value": "An integer overflow leading to an out-of-bounds write was found in libxml2 when parsing XML content with large entity names, allowing denial of service or code execution."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:xmlsoft:libxml2:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-40304",
+        "descriptions": [{"lang": "en", "value": "An issue in libxml2 allows a use-after-free in xmlDictGrow if entity URIs with unusual character sequences are processed, corrupting the internal dictionary."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:xmlsoft:libxml2:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-27404",
+        "descriptions": [{"lang": "en", "value": "FreeType commit 1e2eb65048f75c64b68708efed6ce904c31f3b2f allows remote attackers to cause a heap buffer overflow via a crafted TTF font file."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:freetype:freetype:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-27405",
+        "descriptions": [{"lang": "en", "value": "FreeType commit 53dfdcd8198d2b3201a23c4bad9190519ba918db allows remote attackers to cause a NULL pointer dereference leading to denial of service via a crafted font file."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:freetype:freetype:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-1586",
+        "descriptions": [{"lang": "en", "value": "An out-of-bounds read vulnerability was discovered in the PCRE2 library in the compile_xclass_matchingpath() function, allowing an attacker to disclose information or cause denial of service via crafted regex patterns."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.1, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:pcre:pcre2:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-1587",
+        "descriptions": [{"lang": "en", "value": "An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of pcre2_jit_compile.c, which can be triggered by crafted regex patterns."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.1, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:pcre:pcre2:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-1271",
+        "descriptions": [{"lang": "en", "value": "An arbitrary file write vulnerability was found in GNU gzip's zgrep utility. When zgrep is applied to a file with a specially crafted name, an attacker can overwrite an arbitrary file writable by the user."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 8.8, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:gnu:gzip:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-48303",
+        "descriptions": [{"lang": "en", "value": "GNU tar through 1.34 has a one-byte out-of-bounds read that results in use of uninitialized memory for a conditional jump, triggered by a V7 archive via oldgnu_header in list.c and xheader.c."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.8, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:gnu:tar:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2019-12900",
+        "descriptions": [{"lang": "en", "value": "BZ2_decompress in decompress.c in bzip2 through 1.0.6 has an out-of-bounds write when there are many selectors, allowing remote attackers to cause denial of service or potential code execution."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:bzip:bzip2:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2024-3094",
+        "descriptions": [{"lang": "en", "value": "Malicious code was discovered in upstream tarballs of xz-utils versions 5.6.0 and 5.6.1. The backdoor manipulates sshd via systemd, allowing a remote attacker with a specific key to execute arbitrary commands as root."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 10.0, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:tukaani:xz:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-29491",
+        "descriptions": [{"lang": "en", "value": "ncurses before 6.4-20230408 has memory-corruption issues when processing malformed terminfo data, allowing stack or heap corruption via crafted terminfo data."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.8, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:gnu:ncurses:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-48174",
+        "descriptions": [{"lang": "en", "value": "There is a stack overflow vulnerability in ash.c in BusyBox through 1.35.0 via a crafted shell script that can lead to arbitrary code execution."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:busybox:busybox:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-42363",
+        "descriptions": [{"lang": "en", "value": "A use-after-free vulnerability in the awk applet in BusyBox allows attackers to cause denial of service or potentially execute arbitrary code via crafted awk input."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 5.5, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:busybox:busybox:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-4863",
+        "descriptions": [{"lang": "en", "value": "Heap buffer overflow in libwebp allows a remote attacker to perform an out of bounds memory write via a crafted WebP image, affecting any software embedding libwebp including browsers."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 8.8, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:google:libwebp:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2024-21626",
+        "descriptions": [{"lang": "en", "value": "runc through 1.1.11 has an internal file descriptor leak that allows a specially crafted container image to escape the container's root filesystem, gaining access to the host. Known as Leaky Vessels."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 8.6, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:linuxfoundation:runc:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-25153",
+        "descriptions": [{"lang": "en", "value": "containerd OCI image importer does not properly validate the target path of extracted archives, allowing a path traversal attack to write files outside the expected container root."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 5.5, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:linuxfoundation:containerd:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-25173",
+        "descriptions": [{"lang": "en", "value": "containerd allows attackers to bypass supplementary group permissions by crafting container images that exploit incorrect handling of supplementary groups in the OCI runtime."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 5.3, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:L"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:linuxfoundation:containerd:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-22965",
+        "descriptions": [{"lang": "en", "value": "A Spring MVC or Spring WebFlux application running on JDK 9+ may be vulnerable to remote code execution via data binding. Known as Spring4Shell. Requires JDK 9+, Apache Tomcat, and WAR deployment."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:vmware:spring_framework:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-22963",
+        "descriptions": [{"lang": "en", "value": "In Spring Cloud Function before 3.1.7 and 3.2.3, when using routing functionality, it is possible for a user to provide a specially crafted SpEL as a routing-expression that may result in remote code execution."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:vmware:spring_cloud_function:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-20860",
+        "descriptions": [{"lang": "en", "value": "Spring Framework 6.0.0-6.0.6 and 5.3.0-5.3.25 are vulnerable to a security bypass when using SecurityAnnotationMethodInterceptor and Spring Security's method security, allowing access control to be bypassed."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:vmware:spring_framework:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-42889",
+        "descriptions": [{"lang": "en", "value": "Apache Commons Text performs variable interpolation, allowing properties lookup. If certain interpolators such as script, dns, or url are enabled, an attacker can trigger remote code execution. Known as Text4Shell."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:apache:commons_text:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-42003",
+        "descriptions": [{"lang": "en", "value": "In FasterXML jackson-databind, resource exhaustion can occur because of a lack of a check in primitive value deserializers to avoid deep wrapper array nesting, allowing denial of service attacks."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:fasterxml:jackson-databind:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-42004",
+        "descriptions": [{"lang": "en", "value": "In FasterXML jackson-databind before 2.13.4, use of deeply nested arrays with UNWRAP_SINGLE_VALUE_ARRAYS in combination with a large number of values causes a stack overflow."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:fasterxml:jackson-databind:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-28709",
+        "descriptions": [{"lang": "en", "value": "The fix for CVE-2023-24998 in Apache Tomcat was incomplete. An attacker can trigger unlimited number of file parts in a multipart request, causing a denial of service."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:apache:tomcat:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-46589",
+        "descriptions": [{"lang": "en", "value": "Improper input validation in Apache Tomcat allows an attacker to perform HTTP request smuggling by sending crafted HTTP/1.1 requests with malformed content-length headers."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:apache:tomcat:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-28856",
+        "descriptions": [{"lang": "en", "value": "Redis before 6.0.19, 6.2.x before 6.2.12, and 7.0.x before 7.0.11 is vulnerable to a denial of service via the LMPOP command with an integer overflow in the count argument."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 6.5, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:redis:redis:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-24736",
+        "descriptions": [{"lang": "en", "value": "Redis before 6.2.7 and 7.0 contains a vulnerability where a malicious user can cause a denial of service by providing a crafted Lua script that causes the Lua interpreter to crash."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 5.5, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:redis:redis:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-2454",
+        "descriptions": [{"lang": "en", "value": "PostgreSQL's row security policy can be bypassed via certain SET ROLE sequences, allowing users to read or modify data they are not supposed to access."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.2, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:postgresql:postgresql:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2024-0985",
+        "descriptions": [{"lang": "en", "value": "Late privilege drop in REFRESH MATERIALIZED VIEW CONCURRENTLY in PostgreSQL allows an object creator to execute arbitrary SQL functions as the materialized view owner."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 8.0, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:postgresql:postgresql:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-39325",
+        "descriptions": [{"lang": "en", "value": "A malicious HTTP/2 client which rapidly creates requests and immediately resets them can cause excessive server resource consumption in the Go HTTP/2 server, similar to the HTTP/2 Rapid Reset attack."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:golang:go:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-32681",
+        "descriptions": [{"lang": "en", "value": "Requests (Python) before 2.31.0 forwards proxy-authorization headers to destination servers when encountering cross-origin redirects, potentially leaking credentials."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 6.1, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:H/I:N/A:N"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:python-requests:requests:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-44271",
+        "descriptions": [{"lang": "en", "value": "Pillow before 10.0.0 allows uncontrolled resource consumption via crafted ImageFont inputs using PIL.ImageFont.ImageFont, when the font exceeds a threshold size, leading to denial of service."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:python:pillow:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-45198",
+        "descriptions": [{"lang": "en", "value": "Pillow before 9.3.0 allows an image bomb via decompression when opening a crafted file, leading to excessive memory usage and denial of service."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:python:pillow:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-49083",
+        "descriptions": [{"lang": "en", "value": "cryptography before 41.0.6 allows NULL pointer dereference when loading PKCS12 files via the rust-openssl bindings when certain optional fields are absent, causing denial of service."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 4.0, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:pyca:cryptography:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2024-26130",
+        "descriptions": [{"lang": "en", "value": "cryptography before 42.0.4 allows a NULL pointer dereference when serializing an PKCS12 object with an invalid encryption algorithm OID, potentially causing denial of service."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:pyca:cryptography:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2020-14343",
+        "descriptions": [{"lang": "en", "value": "A vulnerability was discovered in PyYAML where the yaml.load() function allows remote code execution via unsafe deserialization of Python objects, when the default Loader is used."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 9.8, "baseSeverity": "CRITICAL", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:pyyaml:pyyaml:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-46136",
+        "descriptions": [{"lang": "en", "value": "Werkzeug multipart data parser is vulnerable to denial of service through resource exhaustion when processing carefully crafted multipart form data."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:palletsprojects:werkzeug:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-40897",
+        "descriptions": [{"lang": "en", "value": "Python Packaging Authority setuptools before 65.5.1 has a regular expression denial of service (ReDoS) vulnerability in package_index.py when processing HTML pages from package indexes."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:python:setuptools:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-48795",
+        "descriptions": [{"lang": "en", "value": "Paramiko before 3.4.0 is affected by the Terrapin attack, which allows a man-in-the-middle attacker to downgrade the security of an SSH connection by truncating the handshake extension negotiation."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 5.9, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:H/A:N"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:paramiko:paramiko:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2024-23334",
+        "descriptions": [{"lang": "en", "value": "aiohttp before 3.9.2 has a path traversal vulnerability in its static file serving functionality, allowing an attacker to access files outside the intended directory via URL manipulation."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:aiohttp:aiohttp:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-36053",
+        "descriptions": [{"lang": "en", "value": "In Django 3.2 before 3.2.19, 4.x before 4.1.9, and 4.2 before 4.2.1, EmailValidator and URLValidator are subject to a potential ReDoS (regular expression denial of service) attack via crafted email and URL inputs."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:djangoproject:django:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2024-27351",
+        "descriptions": [{"lang": "en", "value": "Django before 4.2.11 and 5.0.x before 5.0.3 is vulnerable to a potential denial of service in django.utils.text.Truncator.words() and chars() when truncating HTML content with very long strings without whitespace."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:djangoproject:django:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-30861",
+        "descriptions": [{"lang": "en", "value": "Flask before 2.3.2 and 2.2.x before 2.2.5 may allow clients to bypass same-site cookie restrictions. If the application uses session cookies, the session may be accessible to third-party sites."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:palletsprojects:flask:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-1941",
+        "descriptions": [{"lang": "en", "value": "A parsing vulnerability for the MessageSet type in the ProtocolBuffers library can lead to out of memory failures. A specially crafted proto payload can trigger the issue."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:google:protobuf:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2021-31879",
+        "descriptions": [{"lang": "en", "value": "GNU Wget before 1.21.2 does not restrict the Authorization header on cross-origin redirects, potentially exposing authentication credentials to unauthorized third-party servers."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 6.1, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:gnu:wget:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2023-34151",
+        "descriptions": [{"lang": "en", "value": "ImageMagick before 7.1.1-1 has undefined behavior (for example, division by zero and heap-based buffer over-read) in the ReadRLEImage function of coders/rle.c."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 7.5, "baseSeverity": "HIGH", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:imagemagick:imagemagick:*:*:*:*:*:*:*:*"}]}]}
+    },
+    {
+      "cve": {
+        "id": "CVE-2022-44267",
+        "descriptions": [{"lang": "en", "value": "ImageMagick 7.1.0-49 is vulnerable to denial of service. When it parses a PNG image (e.g. for resize), the convert process could be left waiting for stdin input."}],
+        "metrics": {"cvssMetricV31": [{"cvssData": {"baseScore": 6.5, "baseSeverity": "MEDIUM", "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H"}}]}
+      },
+      "configurations": {"nodes": [{"cpeMatch": [{"vulnerable": true, "cpe23Uri": "cpe:2.3:a:imagemagick:imagemagick:*:*:*:*:*:*:*:*"}]}]}
+    }
+  ]
+}

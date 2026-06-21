@@ -46,7 +46,7 @@ fi
 
 echo "[*] Fetching NVD CVEs for year $YEAR (${WINDOW_DAYS}-day windows)..."
 
-CURL_ARGS=(-s -f --connect-timeout 15 --max-time 120 --retry 3 --retry-delay 10)
+CURL_ARGS=(-s -f --connect-timeout 15 --max-time 300 --retry 3 --retry-delay 10)
 [ -n "$API_KEY" ] && CURL_ARGS+=(-H "apiKey: $API_KEY")
 
 # Accumulate individual CVE objects as JSONL (one JSON object per line)
@@ -72,25 +72,44 @@ while true; do
     WINDOW_TOTAL=-1
     PAGE=1
 
+    RESP_FILE="$TMPDIR_WORK/response.json"
+
     while true; do
         URL="${BASE_URL}?pubStartDate=${START_DATE}&pubEndDate=${END_DATE}&resultsPerPage=${RESULTS_PER_PAGE}&startIndex=${START_INDEX}"
 
         echo -n "    Page $PAGE (offset $START_INDEX)... "
 
-        RESPONSE=$(curl "${CURL_ARGS[@]}" "$URL")
+        # Retry loop: guard against HTTP errors (429 rate-limit) and truncated responses
+        MAX_RETRIES=5
+        ATTEMPT=0
+        while true; do
+            CURL_OK=true
+            curl "${CURL_ARGS[@]}" "$URL" -o "$RESP_FILE" || CURL_OK=false
+            if $CURL_OK && jq empty "$RESP_FILE" 2>/dev/null; then
+                break
+            fi
+            ATTEMPT=$((ATTEMPT + 1))
+            if [ "$ATTEMPT" -ge "$MAX_RETRIES" ]; then
+                echo ""
+                echo "ERROR: request failed after $MAX_RETRIES attempts. Aborting."
+                exit 1
+            fi
+            echo -n "(retry $ATTEMPT, waiting $((DELAY * 4))s) "
+            sleep $((DELAY * 4))
+        done
 
         if [ "$WINDOW_TOTAL" -eq -1 ]; then
-            WINDOW_TOTAL=$(echo "$RESPONSE" | jq '.totalResults')
+            WINDOW_TOTAL=$(jq '.totalResults' "$RESP_FILE")
             echo -n "total: $WINDOW_TOTAL CVEs — "
         fi
 
-        PAGE_COUNT=$(echo "$RESPONSE" | jq '.vulnerabilities | length')
+        PAGE_COUNT=$(jq '.vulnerabilities | length' "$RESP_FILE")
         echo "$PAGE_COUNT entries"
 
         [ "$PAGE_COUNT" -eq 0 ] && break
 
         # Append each CVE object as a single line to the JSONL file
-        echo "$RESPONSE" | jq -c '.vulnerabilities[]' >> "$VULNS_JSONL"
+        jq -c '.vulnerabilities[]' "$RESP_FILE" >> "$VULNS_JSONL"
 
         START_INDEX=$((START_INDEX + PAGE_COUNT))
         [ "$START_INDEX" -ge "$WINDOW_TOTAL" ] && break
