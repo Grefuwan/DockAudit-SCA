@@ -25,6 +25,10 @@ class PackageExtractor:
     DPKG_STATUS_D = "var/lib/dpkg/status.d/"  # distroless images
     APK_INSTALLED = "lib/apk/db/installed"
     RPM_DB_PREFIXES = ("var/lib/rpm/", "usr/lib/sysimage/rpm/")
+    # pip: <prefix>/pythonX.Y/{dist,site}-packages/<pkg>.dist-info/METADATA
+    # or legacy: <pkg>.egg-info/PKG-INFO
+    PIP_DIST_INFO_SUFFIX = ".dist-info/METADATA"
+    PIP_EGG_INFO_SUFFIX = ".egg-info/PKG-INFO"
 
     def __init__(self, client):
         self.client = client
@@ -80,6 +84,7 @@ class PackageExtractor:
         distroless_blocks = {}
         apk_installed = None
         rpm_present = False
+        pip_metadata = {}  # path -> raw METADATA content (later layers win)
 
         # Later layers override earlier ones, so iterate in order and keep
         # the last occurrence of each database file.
@@ -98,16 +103,26 @@ class PackageExtractor:
                         apk_installed = layer_tar.extractfile(member).read().decode("utf-8", errors="replace")
                     elif name.startswith(self.RPM_DB_PREFIXES) and member.isfile():
                         rpm_present = True
+                    elif member.isfile() and (
+                        name.endswith(self.PIP_DIST_INFO_SUFFIX)
+                        or name.endswith(self.PIP_EGG_INFO_SUFFIX)
+                    ):
+                        pip_metadata[name] = layer_tar.extractfile(member).read().decode("utf-8", errors="replace")
 
         if dpkg_status:
-            return self._parse_dpkg_status(dpkg_status), rpm_present
-        if distroless_blocks:
+            packages = self._parse_dpkg_status(dpkg_status)
+        elif distroless_blocks:
             combined = "\n\n".join(distroless_blocks.values())
-            return self._parse_dpkg_status(combined), rpm_present
-        if apk_installed:
-            return self._parse_apk_installed(apk_installed), rpm_present
+            packages = self._parse_dpkg_status(combined)
+        elif apk_installed:
+            packages = self._parse_apk_installed(apk_installed)
+        else:
+            packages = []
 
-        return [], rpm_present
+        if pip_metadata:
+            packages = packages + self._parse_pip_packages(pip_metadata)
+
+        return packages, rpm_present
 
     def _parse_dpkg_status(self, content):
         packages = []
@@ -129,6 +144,33 @@ class PackageExtractor:
                     "package_manager": "dpkg"
                 })
         return packages
+
+    def _parse_pip_packages(self, metadata_blocks):
+        seen = set()
+        packages = []
+        for content in metadata_blocks.values():
+            pkg = self._parse_pip_metadata(content)
+            if pkg:
+                key = (pkg["name"], pkg["version"])
+                if key not in seen:
+                    seen.add(key)
+                    packages.append(pkg)
+        logger.debug("pip packages encontrados: %d", len(packages))
+        return packages
+
+    def _parse_pip_metadata(self, content):
+        """Parse a PEP 566 METADATA (or PKG-INFO) file and return a package dict."""
+        name = version = None
+        for line in content.splitlines():
+            if line.startswith("Name:") and name is None:
+                name = line.split(":", 1)[1].strip().lower()
+            elif line.startswith("Version:") and version is None:
+                version = line.split(":", 1)[1].strip()
+            if name and version:
+                break
+        if name and version:
+            return {"name": name, "version": version, "type": "library", "package_manager": "pip"}
+        return None
 
     def _parse_apk_installed(self, content):
         packages = []
