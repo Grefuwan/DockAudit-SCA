@@ -1,6 +1,10 @@
 import argparse
+import logging
 import sys
 from dockaudit.orchestrator.orchestrator import Orchestrator
+from dockaudit.utils.logger import setup_logging
+
+logger = logging.getLogger(__name__)
 
 
 def check_docker_available(target="local"):
@@ -13,10 +17,10 @@ def check_docker_available(target="local"):
         client.ping()
         return True
     except ModuleNotFoundError:
-        print("[ERROR] Docker SDK no está instalado. Ejecuta `pip install -r requirements.txt`.")
+        logger.error("Docker SDK no está instalado. Ejecuta `pip install -r requirements.txt`.")
         return False
     except Exception as e:
-        print(f"[ERROR] No se puede conectar al daemon Docker: {e}")
+        logger.error("No se puede conectar al daemon Docker: %s", e)
         return False
 
 
@@ -88,6 +92,12 @@ def parse_arguments():
         help="Sale con código 2 si hay hallazgos con severidad igual o superior a la indicada (integración CI/CD)"
     )
 
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug logging"
+    )
+
     return parser.parse_args()
 
 
@@ -108,10 +118,20 @@ def max_severity_reached(results, threshold):
 
 
 def main():
+    import os
+    from datetime import datetime
+
     args = parse_arguments()
 
+    log_dir = "reports/logs"
+    os.makedirs(log_dir, exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    log_file = os.path.join(log_dir, f"{timestamp}_-_audit.log")
+
+    setup_logging(debug=args.debug, log_file=log_file)
+
     if not check_docker_available(args.target):
-        print("Docker es necesario para ejecutar la auditoría local. Instala el daemon y asegúrate de que /var/run/docker.sock sea accesible.")
+        logger.error("Docker es necesario para ejecutar la auditoría local. Instala el daemon y asegúrate de que /var/run/docker.sock sea accesible.")
         sys.exit(1)
 
     orchestrator = Orchestrator(
@@ -131,11 +151,11 @@ def main():
     if results and results.get("host") is not None:
         orchestrator.generate_report(results)
     else:
-        print("[*] Auditoría abortada. No se generaron reportes.")
+        logger.warning("Auditoría abortada. No se generaron reportes.")
         sys.exit(1)
 
     if max_severity_reached(results, args.fail_on):
-        print(f"[!] Hallazgos con severidad >= {args.fail_on} detectados (--fail-on). Código de salida: 2")
+        logger.warning("Hallazgos con severidad >= %s detectados (--fail-on). Código de salida: 2", args.fail_on)
         sys.exit(2)
 
 

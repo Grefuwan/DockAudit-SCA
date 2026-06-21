@@ -1,7 +1,10 @@
 import json
+import logging
 import os
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+logger = logging.getLogger(__name__)
 
 
 class ReportGenerator:
@@ -32,6 +35,7 @@ class ReportGenerator:
         return env.get_template("report_template.html")
 
     def generate(self, results, audit_target="All Containers", out_filename=None):
+        logger.debug("Generando informe de auditoría para: %s", audit_target)
         os.makedirs("reports", exist_ok=True)
 
         # Packages are inventory data, not findings — extract before the findings filter
@@ -76,7 +80,7 @@ class ReportGenerator:
             out_path = os.path.join("reports", f"{base}.json")
             with open(out_path, "w", encoding="utf-8") as f:
                 json.dump({**filtered_results, "packages": packages}, f, indent=2, ensure_ascii=False)
-            print(f"[+] JSON report written to: {out_path}")
+            logger.info("JSON report written to: %s", out_path)
             return out_path
 
         template = self._template()
@@ -96,5 +100,5 @@ class ReportGenerator:
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(report_html)
 
-        print(f"[+] HTML report written to: {out_path}")
+        logger.info("HTML report written to: %s", out_path)
         return out_path

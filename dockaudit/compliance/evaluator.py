@@ -2,9 +2,12 @@
 Compliance evaluator for correlating audit findings with CIS and ISO/IEC 27001 controls.
 """
 
+import logging
 import os
 
 from .mapping import COMPLIANCE_MAPPING
+
+logger = logging.getLogger(__name__)
 
 # Dangerous kernel modules that should not be loaded (rare network protocols)
 _DANGEROUS_KERNEL_MODULES = {"dccp", "tipc", "rds", "sctp"}
@@ -111,6 +114,7 @@ class ComplianceEvaluator:
     # Evaluation engine
 
     def evaluate(self):
+        logger.debug("Evaluando controles de compliance CIS/ISO 27001")
         self.compliance_findings = []
         for cis_id, control in self.mapping.items():
             self.compliance_findings.append(self._evaluate_control(cis_id, control))

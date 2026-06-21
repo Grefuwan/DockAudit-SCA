@@ -1,9 +1,11 @@
 import json
+import logging
 import os
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
+logger = logging.getLogger(__name__)
 
 PURL_TYPE_BY_MANAGER = {
     "dpkg": "deb",
@@ -66,6 +68,7 @@ class SBOMGenerator:
         return component
 
     def generate(self, images, package_components=None, filename=None):
+        logger.debug("Generando SBOM para %s imagen(es)", len(images))
         os.makedirs(self.output_dir, exist_ok=True)
 
         components = [self._build_component(image) for image in images]
@@ -89,5 +92,5 @@ class SBOMGenerator:
         with open(out_path, "w", encoding="utf-8") as f:
             json.dump(sbom, f, indent=2, ensure_ascii=False)
 
-        print(f"[+] SBOM written to: {out_path}")
+        logger.info("SBOM written to: %s", out_path)
         return str(out_path), components

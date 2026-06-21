@@ -4,7 +4,10 @@ Compliance report generator - Creates compliance reports in HTML and JSON format
 
 import json
 import html as _html
+import logging
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 
 class ComplianceReportGenerator:
@@ -18,6 +21,7 @@ class ComplianceReportGenerator:
     # Public API
 
     def to_json(self, pretty=True):
+        logger.debug("Generando reporte de compliance en JSON para: %s", self.audit_target)
         report = {
             "metadata": {
                 "generated_at": self.generated_at,

@@ -1,9 +1,12 @@
 import json
+import logging
 import os
 import re
 import subprocess
 import tarfile
 import tempfile
+
+logger = logging.getLogger(__name__)
 
 
 class PackageExtractor:
@@ -28,6 +31,7 @@ class PackageExtractor:
 
     def extract(self, image, timeout=120):
         image_ref = image.tags[0] if image.tags else image.id
+        logger.debug("Extrayendo paquetes de imagen: %s", image_ref)
 
         try:
             packages, rpm_present = self._extract_static(image_ref, timeout)

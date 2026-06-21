@@ -1,5 +1,8 @@
 import io
+import logging
 import tarfile
+
+logger = logging.getLogger(__name__)
 
 
 class GeneratorFile(io.RawIOBase):
@@ -32,6 +35,7 @@ class BinaryAnalyzer:
         self.client = client
 
     def analyze_images(self, images):
+        logger.debug("Analizando binarios de %s imagen(es)", len(images))
         findings = []
         for image in images:
             findings.extend(self._analyze_single_image(image))

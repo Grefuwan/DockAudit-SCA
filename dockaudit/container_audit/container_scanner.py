@@ -1,5 +1,9 @@
+import logging
+
 import docker
 from docker.errors import DockerException
+
+logger = logging.getLogger(__name__)
 
 
 class ContainerAudit:
@@ -9,6 +13,7 @@ class ContainerAudit:
         self.findings = []
 
     def run(self):
+        logger.debug("Iniciando auditoría de contenedores")
         try:
             client = docker.from_env()
             containers = client.containers.list(all=True)

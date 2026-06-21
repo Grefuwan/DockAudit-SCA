@@ -1,10 +1,14 @@
 import gzip
 import json
+import logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 class NVDParser:
     def load_feed(self, feed_path):
+        logger.debug("Cargando feed NVD: %s", feed_path)
         feed_path = Path(feed_path)
         if not feed_path.exists():
             raise FileNotFoundError(f"NVD feed not found: {feed_path}")

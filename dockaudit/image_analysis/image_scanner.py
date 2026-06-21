@@ -1,3 +1,5 @@
+import logging
+
 import docker
 from docker.errors import DockerException
 
@@ -6,6 +8,8 @@ from dockaudit.image_analysis.binary_analyzer import BinaryAnalyzer
 from dockaudit.image_analysis.sbom_generator import SBOMGenerator
 from dockaudit.sca.nvd_parser import NVDParser
 from dockaudit.sca.vulnerability_matcher import VulnerabilityMatcher
+
+logger = logging.getLogger(__name__)
 
 
 class ImageAnalysis:
@@ -18,6 +22,7 @@ class ImageAnalysis:
         self.image_filter = image_filter
 
     def run(self, sbom_filename=None):
+        logger.debug("Iniciando análisis de imágenes Docker")
         try:
             client = docker.from_env()
             

@@ -1,6 +1,9 @@
+import logging
 import subprocess
 import json
 import os
+
+logger = logging.getLogger(__name__)
 
 
 class HostAudit:
@@ -11,6 +14,7 @@ class HostAudit:
         self.host_info = {}
 
     def run(self):
+        logger.debug("Iniciando auditoría del host")
         self.daemon_config = self._load_daemon_config()
         self.host_info = self._inspect_docker_socket()
         self.host_info.update(self._load_docker_info())
