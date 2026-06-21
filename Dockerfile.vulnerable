@@ -1,0 +1,70 @@
+FROM debian:bullseye
+
+# -------------------------------------------------------
+# Imagen intencionalmente vulnerable para pruebas de DockAudit-SCA.
+# NO usar en producción ni exponer en redes públicas.
+# -------------------------------------------------------
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Secretos hardcodeados en variables de entorno (disparará detección de secretos)
+ENV SECRET_KEY=s3cr3t_django_key_12345
+ENV DB_PASSWORD=admin123
+ENV API_TOKEN=ghp_FakeGitHubToken0000000000000000000
+
+# Instala paquetes de sistema con CVEs conocidas en el feed
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Shell y utilidades base
+    bash \
+    busybox \
+    tar \
+    gzip \
+    bzip2 \
+    xz-utils \
+    wget \
+    # Crypto y red — muchos CVEs en el feed
+    openssl \
+    libssl-dev \
+    curl \
+    libcurl4 \
+    openssh-server \
+    openssh-client \
+    # Gestión del sistema
+    sudo \
+    git \
+    # Servidor web
+    nginx \
+    # Librerías con CVEs conocidas
+    libxml2 \
+    libexpat1 \
+    libsqlite3-0 \
+    sqlite3 \
+    libpcre2-8-0 \
+    libncurses6 \
+    libfreetype6 \
+    libwebp6 \
+    zlib1g \
+    imagemagick \
+    # Runtime Python
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Librerías Python con versiones antiguas y vulnerables (CVEs en el feed)
+RUN pip3 install --no-cache-dir \
+    'PyYAML==5.3.1' \
+    'Pillow==9.0.0' \
+    'cryptography==36.0.0' \
+    'Werkzeug==2.2.2' \
+    'Django==3.2.16' \
+    'Flask==2.2.4' \
+    'requests==2.28.0' \
+    'paramiko==3.2.0' \
+    'aiohttp==3.8.5' \
+    'setuptools==65.0.0' \
+    'protobuf==3.20.0'
+
+# Mala práctica: corre como root, sin HEALTHCHECK, puertos expuestos sin necesidad
+EXPOSE 22 80
+
+CMD ["bash"]
